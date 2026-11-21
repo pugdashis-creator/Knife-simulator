@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knife Spin Simulator — Online Accounts · Update 3.1.17</title>
+<style>
+:root{--bg:#0b1018;--panel:#141d2a;--panel2:#1b2838;--line:#2a3a50;--text:#edf3fb;--muted:#9aabc0;--blue:#54a7ff;--gold:#f4bd50;--green:#55d69a;--red:#ff7777}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#17263a 0,#0b1018 55%);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;min-height:100vh}
+header{padding:22px 18px 12px;text-align:center}
+h1{margin:0;font-size:clamp(26px,5vw,42px);letter-spacing:1px}
+header p{color:var(--muted);margin:8px 0 0}
+main{width:min(1600px,97%);margin:0 auto 40px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:rgba(20,29,42,.92);border:1px solid var(--line);padding:14px 16px;border-radius:16px;margin:16px 0}
+.balance{font-size:22px;font-weight:800;color:var(--gold)}
+button{border:0;border-radius:10px;padding:11px 16px;font-weight:800;cursor:pointer;transition:transform .15s,filter .15s}
+button:hover{filter:brightness(1.12);transform:translateY(-1px)}
+button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.primary{background:linear-gradient(135deg,#3189e8,#5ab7ff);color:#061321}
+.green{background:linear-gradient(135deg,#2eae79,#61e0a7);color:#061b13}
+.gold{background:linear-gradient(135deg,#d99a2d,#ffd36b);color:#241700}
+.subtle{background:#26364a;color:var(--text);border:1px solid #3a4c63}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.tab{background:#182435;color:var(--muted);border:1px solid var(--line)}
+.tab.active{background:#28527d;color:white;border-color:#4b9de8}
+.page{display:none}.page.active{display:block}
+.panel{background:rgba(20,29,42,.96);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 14px 40px #0003}
+h2{margin:0 0 14px;font-size:21px}
+h3{margin:0 0 8px}
+.muted{color:var(--muted)}
+.spin-layout{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+.roulette{height:150px;overflow:hidden;position:relative;border:1px solid #3a526e;border-radius:14px;background:linear-gradient(90deg,#111b29,#1b2b40,#111b29);display:flex;align-items:center;justify-content:flex-start;margin:18px 0}
+.roulette:before,.roulette:after{content:"";position:absolute;top:0;bottom:0;width:18%;z-index:2;pointer-events:none}
+.roulette:before{left:0;background:linear-gradient(90deg,#111b29,transparent)}
+.roulette:after{right:0;background:linear-gradient(270deg,#111b29,transparent)}
+.pointer{position:absolute;top:0;bottom:0;left:50%;width:3px;background:var(--gold);z-index:3;box-shadow:0 0 12px var(--gold)}
+.reel{display:flex;align-items:center;gap:12px;white-space:nowrap;transition:transform 3.5s cubic-bezier(.08,.72,.12,1);will-change:transform;flex:0 0 max-content}
+.reel-item{width:116px;height:94px;flex:0 0 116px;border:1px solid #3b526d;background:#223249;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;text-align:center;padding:6px}
+.reel-item .emoji{font-size:30px;margin-bottom:6px}.reel-item .emoji.knife-gold{filter:brightness(0) saturate(100%) invert(78%) sepia(57%) saturate(815%) hue-rotate(348deg) brightness(102%) contrast(95%);text-shadow:0 0 12px #f4bd50}
+.spin-actions{display:flex;flex-direction:column;gap:10px;max-width:100%}
+.spin-actions button{width:100%;min-width:0;text-align:center}
+.result{min-height:52px;padding:12px;border-radius:12px;background:#101a27;border:1px solid var(--line);margin-top:14px;color:var(--muted)}
+.odds{display:grid;gap:10px}
+.odds-row{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+.bar{height:8px;border-radius:20px;background:#26364a;overflow:hidden;grid-column:1/-1}
+.bar span{display:block;height:100%;background:linear-gradient(90deg,#388fe0,#7ac5ff)}
+.bar.goldbar span{background:linear-gradient(90deg,#c68a2a,#ffe08a)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.card{background:#182536;border:1px solid #30445d;border-radius:14px;padding:14px}
+.card-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.knife-icon{font-size:28px}
+.value{color:var(--gold);font-weight:900}.pill{display:inline-block;border-radius:6px;padding:4px 7px;margin:3px 4px 3px 0;font-size:11px;font-weight:800;background:#30445d}.st{background:#15523d;color:#8ff5bf}.sv{background:#6d4b18;color:#ffe09b}.rarity-Common{color:#d2e2f5}.rarity-Uncommon{color:#69dca7}.rarity-Rare{color:#72b9ff}.rarity-Epic{color:#c39aff}.rarity-Legendary{color:#ffcc67}.rarity-Mythic{color:#ff8eac}.card h3{margin-top:10px}.result-scroll{max-height:310px;overflow:auto}.result-line{border-bottom:1px solid #2a3a50;padding:5px 0}.reel-item{overflow:hidden}
+.case-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:9px;max-height:320px;overflow-y:auto;padding:3px}.case-choice{background:#19293d;color:var(--text);border:1px solid #344b68;text-align:left;min-height:65px}.case-choice.active{border:2px solid var(--gold);background:#33425a}.case-choice small{display:block;color:var(--muted);margin-top:4px}.inventory-controls{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:14px 0 18px}.inventory-controls label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:12px;font-weight:700}.inventory-controls select{min-width:160px;max-width:100%;padding:11px 12px;background:#223249;color:var(--text);border:1px solid #47617e;border-radius:10px;font-size:14px}.inventory-controls button{min-height:42px}.card button{width:100%;margin-top:12px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.stat{background:#182536;border:1px solid #30445d;border-radius:14px;padding:16px}
+.stat strong{display:block;font-size:25px;color:var(--gold);margin-top:8px}
+.empty{text-align:center;padding:34px;color:var(--muted);border:1px dashed #40536b;border-radius:14px}
+.small{font-size:12px}
+footer{text-align:center;color:#71849b;padding:8px 0 28px}
+@media(max-width:720px){.spin-layout{grid-template-columns:1fr}.topbar{align-items:flex-start}.roulette{height:130px}.panel{padding:15px}}
+
+/* Update 2.2.1: desktop spin controls remain visible without page scrolling. */
+header{padding:8px 12px 0}
+h1{font-size:clamp(20px,3vw,29px)}
+header p{margin:2px 0 0;font-size:12px}
+main{margin-bottom:12px}
+.topbar{padding:7px 12px;margin:8px 0;border-radius:12px}
+.balance{font-size:18px}
+.topbar button{padding:8px 12px}
+.tabs{margin:8px 0;gap:6px}
+.tabs button{padding:8px 12px}
+.panel{padding:12px;margin-bottom:9px;border-radius:13px}
+h2{font-size:18px;margin-bottom:6px}
+.case-picker{padding:9px 12px}
+.case-picker summary,.help-panel summary{cursor:pointer;font-weight:800}
+.case-picker[open] .case-grid{margin-top:10px}
+.spin-layout{grid-template-columns:minmax(0,1.5fr) minmax(240px,.7fr);gap:10px}
+.spin-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(145px,195px);gap:10px;align-items:stretch;margin:8px 0}
+.spin-workspace .roulette{height:100%;min-height:220px;margin:0}
+.spin-actions{gap:4px;justify-content:space-between}
+.spin-actions button{padding:6px 5px;flex:1;font-size:11px}
+#caseDescription{margin:3px 0;font-size:12px}
+.spin-layout .panel>.muted.small{font-size:11px;margin:5px 0}
+.result{margin-top:7px;padding:9px;min-height:42px;max-height:100px;overflow:auto;font-size:13px}
+.odds{gap:5px;font-size:12px}
+.bar{height:5px}
+.spin-layout>.panel:nth-child(2) .muted.small{font-size:11px;margin-top:8px!important}
+.help-panel{padding:9px 12px}
+.help-panel p{margin-bottom:0}
+footer{padding:5px 0 10px;font-size:11px}
+@media(max-width:800px){
+ .spin-layout{grid-template-columns:1fr}
+ .spin-layout>.panel:nth-child(2){display:none}
+ .spin-workspace{grid-template-columns:minmax(0,1fr) minmax(120px,35%)}
+ .spin-workspace .roulette{min-height:205px}
+}
+@media(max-width:480px){
+ .spin-workspace{grid-template-columns:minmax(0,1fr) 118px;gap:7px}
+ .spin-actions button{padding:5px 3px;font-size:10px}
+ .spin-workspace .roulette{min-height:190px}
+ .panel{padding:9px}
+ header p{display:none}
+ .tabs button{padding:7px 8px;font-size:12px}
+}
+@media(max-height:700px) and (min-width:801px){
+ .spin-workspace .roulette{min-height:205px}
+ .spin-actions button{padding:5px 5px}
+ .spin-layout .panel>.muted.small{display:none}
+ .spin-layout>.panel:nth-child(2) .muted.small{display:none}
+}
+
+.inventory-total{text-align:right;background:#102338;border:1px solid #365273;border-radius:12px;padding:10px 16px}.inventory-total .value{font-size:23px;margin-top:3px}
+ #authScreen{max-width:480px;margin:25px auto;padding:22px}
+#authScreen input{width:100%;padding:12px;margin:6px 0 12px;background:#223249;color:white;border:1px solid #47617e;border-radius:9px}
+#authScreen label{display:block;color:var(--muted);font-size:13px}
+#authScreen button{margin:5px 6px 5px 0}
+#authMessage{min-height:24px;line-height:1.5}
+#accountBar{display:none;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin:7px auto;width:min(1600px,97%);padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+#gameMain{display:none}
+.rarity-card-Common{background:linear-gradient(140deg,#3b414b,#252c36);border-color:#777f8b}
+.rarity-card-Uncommon{background:linear-gradient(140deg,#174b33,#152f29);border-color:#38a86b}
+.rarity-card-Rare{background:linear-gradient(140deg,#163d73,#172b4b);border-color:#3987ed}
+.rarity-card-Epic{background:linear-gradient(140deg,#512879,#302044);border-color:#a16ce8}
+.rarity-card-Legendary{background:linear-gradient(140deg,#74401a,#38271d);border-color:#e59a3d}
+.rarity-card-Mythic{background:linear-gradient(140deg,#7d2633,#3b1d2a);border-color:#ee5d71}
+.rank-Beginner{color:#b9c0c9}.rank-Intermediate{color:#62dc92}.rank-Advanced{color:#69aaff}.rank-Master{color:#c68bff}.rank-Pro{color:#ffac57}.rank-Elite{color:#ff6777}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:12px}
+.feature-box{border:1px solid var(--line);border-radius:12px;padding:14px;background:#172638}
+.feature-box strong{display:block;margin-bottom:6px}
+.feature-box button{width:100%;margin-top:10px}
+.feature-select{width:100%;background:#223249;color:white;border:1px solid #47617e;border-radius:9px;padding:12px}
+.feature-note{font-size:13px;color:var(--muted);line-height:1.55}
+#upgraderMessage,#diamondMessage{padding:12px;border-radius:10px;background:#101a27;border:1px solid var(--line);margin-top:12px;min-height:42px}
+@media(max-width:600px){.feature-grid{grid-template-columns:1fr}}
+.rgb-title{background:linear-gradient(90deg,#ff5555,#ffc14d,#72e76c,#52d9fa,#9b76ff,#ff63ce,#ff5555);background-size:250% auto;background-clip:text;-webkit-background-clip:text;color:transparent!important;animation:rgbShift 4s linear infinite}@keyframes rgbShift{to{background-position:250% center}}
+/* 3.1.2.6 — collection, favorites, progression */
+.level-panel{margin:10px auto 16px;max-width:1100px;padding:14px 18px;border:1px solid #35475f;border-radius:14px;background:#152235}
+.level-bar{height:13px;border-radius:99px;background:#29384d;overflow:hidden;margin:9px 0}.level-fill{height:100%;width:0;background:linear-gradient(90deg,#49aaff,#bd84ff);transition:width .3s}
+.card-action-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.card-action-row button{min-width:0;font-size:11px!important}
+.favorite-toggle{position:absolute;left:10px;top:10px;z-index:2;background:#101b2ce8;border:1px solid #53677e;color:#aebed1;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:17px}.favorite-toggle.on{color:#ffdb69;border-color:#ffdb69}
+.collection-controls{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.collection-controls select,.collection-controls input{padding:10px;background:#223249;color:white;border:1px solid #47617e;border-radius:9px}
+.collection-entry{border:1px solid #35455b;background:#162335;padding:12px;border-radius:12px}.collection-entry.discovered{border-color:#568e79}.collection-entry .muted{font-size:12px}
+/* 3.1.3 */
+.favorite-toggle{width:27px!important;height:27px!important;min-width:27px!important;display:grid;place-items:center;left:8px!important;top:8px!important;padding:0!important;margin:0!important;border-radius:5px!important;font-size:16px!important;line-height:1!important}
+.profile-card{display:flex;gap:18px;align-items:center;padding:18px;background:#17263b;border:1px solid #3b526e;border-radius:15px;margin:14px 0}
+.profile-avatar{font-size:48px;min-width:72px;text-align:center;background:#263b57;border-radius:14px;padding:10px}
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:10px;margin:14px 0}
+.icon-item{padding:12px;text-align:center;background:#19283c;border:1px solid #405672;border-radius:12px}
+.icon-item .icon-art{font-size:38px;margin:6px}
+.icon-item button{margin:4px 0;width:100%;font-size:12px}
+.collection-bonus{margin:12px 0;padding:12px;background:#172b3d;border:1px solid #3b6e8a;border-radius:12px}
+/* 3.1.2.6 — clean inventory cards */
+#knifeGrid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+#knifeGrid .card{--accent:#8c9bae;position:relative;display:flex;flex-direction:column;gap:0;min-height:300px;padding:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--accent) 42%,#334255);border-radius:16px;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 11%,#162130),#111a27 75%);box-shadow:0 8px 22px #0002;transition:transform .18s,box-shadow .18s}
+#knifeGrid .card:hover{transform:translateY(-3px);box-shadow:0 14px 30px #0005}
+#knifeGrid .rarity-card-Common{--accent:#a4b1c1}#knifeGrid .rarity-card-Uncommon{--accent:#50d594}#knifeGrid .rarity-card-Rare{--accent:#65aeff}#knifeGrid .rarity-card-Epic{--accent:#ba91ff}#knifeGrid .rarity-card-Legendary{--accent:#f4bd50}#knifeGrid .rarity-card-Mythic{--accent:#ff7f9a}
+.knife-card-art{height:105px;display:flex;align-items:center;justify-content:center;position:relative;background:radial-gradient(ellipse at 50% 85%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 72%);border-bottom:1px solid #ffffff10}
+.knife-card-art .knife-icon{font-size:28px;filter:none;transform:none}
+.knife-upgrade-tag{position:absolute;top:10px;right:10px;font-size:10px;letter-spacing:.6px;font-weight:900;padding:5px 8px;border-radius:7px;background:#0b1421dc;border:1px solid #ffffff23}
+.knife-card-body{padding:14px 14px 9px;flex:1}
+#knifeGrid .card h3{margin:0 0 5px;font-size:17px;line-height:1.25}
+.knife-skin-line{font-size:12px;margin-bottom:9px;line-height:1.4}
+.knife-wear{font-size:11px;color:#b0c1d4;margin:7px 0}
+.knife-tags{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+.knife-tags .pill{margin:0;font-size:10px}
+.knife-details{font-size:11px;color:#aebed1;line-height:1.6;margin-top:8px}.knife-details summary{cursor:pointer;list-style:none;padding:7px 9px;background:#223249;border:1px solid #344960;border-radius:8px;font-weight:700}.knife-details summary::-webkit-details-marker{display:none}.knife-details summary:after{content:"⌄";float:right}.knife-details[open] summary:after{content:"⌃"}.knife-details-content{padding:9px 5px 3px}
+.knife-card-footer{padding:12px 14px 14px;border-top:1px solid #ffffff14;background:#0a142022}
+.knife-price-label{font-size:10px;letter-spacing:1px;font-weight:800;color:#9db0c7}
+.knife-card-footer .value{font-size:19px;line-height:1.5}
+#knifeGrid .card button{margin-top:9px;padding:10px;font-size:12px;border-radius:9px}
+@media(max-width:520px){#knifeGrid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:9px}.knife-card-art{height:85px}.knife-card-art .knife-icon{font-size:28px}.knife-card-body{padding:11px}.knife-card-footer{padding:10px}.knife-details{font-size:9px}}
+.rank-Beginner\+{color:#cbd5e1}.rank-Intermediate\+{color:#71e6b2}.rank-Advanced\+{color:#80b9ff}.rank-Pro\+{color:#ffc278}.rank-Master\+{color:#e5a5ff}.rank-Elite\+{color:#ffdf76}
+.daily-compact{padding:10px 14px!important;margin:10px 0!important}.daily-compact summary{cursor:pointer;font-weight:700}.daily-mission-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:7px;margin-top:9px}.daily-card{background:#19273b;border:1px solid #344963;border-radius:9px;padding:8px;font-size:12px}.daily-card strong{display:block;font-size:13px}.daily-card .muted{font-size:11px}.daily-card button{padding:5px 9px;font-size:12px;margin-top:5px}.daily-card progress{width:100%;height:7px;accent-color:#69d9b0}.daily-card.locked{opacity:.55}.recent-drops{max-height:300px;overflow:auto}.recent-drops>div{padding:7px;border-bottom:1px solid #33445c;font-size:13px}#inventorySearch{min-width:220px;max-width:300px}#boosterInventoryList{display:flex;flex-wrap:wrap;gap:10px;padding-top:12px}.booster-entry{padding:10px;background:#1b2a3e;border-radius:8px;border:1px solid #41546c;min-width:180px}.booster-entry button{margin-top:6px} 
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<header>
+  <h1>🔪 KNIFE SPIN SIMULATOR</h1>
+  <p>Spin for rewards. Collect knives. Build your inventory.</p>
+</header>
+<section id="authScreen" class="panel">
+  <h2>☁️ Your own account</h2>
+  <p class="muted small">Sign up with an email and password. Your coins, knives and statistics will save to your account and follow you to other devices.</p>
+  <form id="authForm">
+    <label for="accountEmail">Email</label><input id="accountEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+    <label for="accountPassword">Password (at least 6 characters)</label><input id="accountPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Password">
+    <button type="submit" class="primary" id="loginButton">Log in</button>
+    <button type="button" class="green" id="signupButton">Create account</button>
+  </form>
+  <p id="authMessage" class="muted small">Loading account system…</p>
+  <p class="muted small">Only use a password you haven't used on another website. This is a virtual-coins game.</p>
+</section>
+<div id="accountBar"><div><strong id="accountName"></strong> <span class="muted small" id="cloudStatus">Cloud save ready</span></div><button class="subtle" id="logoutButton">Log out</button></div>
+<main id="gameMain">
+  <section class="topbar">
+    <div><div class="muted small">YOUR BALANCE</div><div class="balance">🪙 <span id="coins">500</span> coins</div></div>
+    <div><div class="muted small">DIAMONDS</div><div class="balance" style="color:#86e7ff">💎 <span id="diamondsBalance">0</span></div><div class="small" id="topRank"></div></div>
+    <button class="green" id="freeCoins">＋ Add Coins</button>
+  </section>
+
+  <section class="level-panel"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><strong id="levelTitle">⭐ Level 0</strong><span class="muted small" id="levelSpins">0 / 100 spins</span></div><div class="level-bar"><div class="level-fill" id="levelFill"></div></div><div class="muted small" id="levelRewardNote">Level up: +10 💎 · Every fifth level: +50 💎 bonus</div></section>
+  <nav class="tabs">
+    <button class="tab active" data-page="home">🎰 Spin</button>
+    <button class="tab" data-page="inventory">🔪 Inventory <span id="inventoryCount">0</span></button>
+    <button class="tab" data-page="upgrader">⚒️ Upgrader</button>
+    <button class="tab" data-page="diamonds">💎 Diamonds</button>
+    <button class="tab" data-page="collection">📚 Collection</button>
+    <button class="tab" data-page="profile">👤 Profile</button>
+    <button class="tab" data-page="stats">📊 Statistics</button>
+    <button class="tab" data-page="leaderboard">🏆 Leaderboard</button>
+  </nav>
+
+  <section class="page active" id="home">
+    <details class="panel case-picker">
+      <summary>🧰 Change Case <span class="muted small">(click to expand · 22 cases)</span></summary>
+      <p class="muted small">Case prices increase every 5 levels. Base prices: All-Knives 200 · Specific Knife 300 · Diamond 10,000 · 50/50 10,000 coins.</p>
+      <div class="case-grid" id="caseGrid"></div>
+    </details>
+    <details class="panel daily-compact" id="dailyPanel" open>
+      <summary>📋 Daily Missions <span class="muted small" id="dailySummary">0/9 completed · Tap to expand/collapse</span></summary>
+      <div id="dailyMissionList" class="daily-mission-list"></div>
+    </details>
+    <div style="display:flex;justify-content:flex-end;margin:4px 0"><button class="subtle" id="soundToggle" type="button" aria-pressed="true">🔊 Knife sounds: On</button></div>
+    <div class="spin-layout">
+      <div class="panel">
+        <h2>🎰 <span id="caseHeading">All-Knives Case</span></h2>
+        <p class="muted" id="caseDescription">200 coins per spin · All 20 knives · All skins</p>
+        <div class="spin-workspace">
+          <div class="roulette"><div class="pointer"></div><div class="reel" id="reel"></div></div>
+          <div class="spin-actions">
+          <button class="primary" id="spinBtn" data-spins="1">SPIN 1 — 200 🪙</button>
+          <button class="subtle" id="spin3Btn" data-spins="3">SPIN 3 — 600 🪙</button>
+          <button class="subtle" id="spin5Btn" data-spins="5">SPIN 5 — 1,000 🪙</button>
+          <button class="subtle" id="spin10Btn" data-spins="10">SPIN 10 — 2,000 🪙</button>
+          <button class="subtle" id="spin25Btn" data-spins="25">SPIN 25 — 5,000 🪙</button>
+          <button class="subtle" id="spin50Btn" data-spins="50">SPIN 50 — 10,000 🪙</button>
+          <button class="subtle" id="spin100Btn" data-spins="100">SPIN 100 — 20,000 🪙</button>
+          </div>
+        </div>
+        <p class="muted small">Choose 1, 3, 5, 10, 25, 50, or 100 spins. Prices update with your selected case. Every newly pulled knife has a random float from 0.0000 to 1.0000. Wear affects its value: BS 1×, WW 1.2×, FT 1.4×, MW 1.6×, FN 2×.</p>
+        <div class="result" id="result">Your reward will appear here. Good luck!</div>
+      </div>
+      <div class="panel">
+        <h2>🎁 Reward Odds</h2>
+        <div class="odds" id="oddsList"></div>
+        <p class="muted small" style="margin-top:16px">Float qualities: Factory New (0–0.07), Minimal Wear (0.07–0.15), Field-Tested (0.15–0.38), Well-Worn (0.38–0.45), Battle-Scarred (0.45–1). Floats are uniformly rolled. Wear multiplies prices from 1× (BS) to 2× (FN).</p><p class="muted small" style="margin-top:16px">Knife reward: 2% per spin in standard cases (the Diamond Case has no knives; the 50/50 Case has a 50% knife chance). Skin rarities are rolled separately when you win a knife. StatTrak: 10% (5× value); Souvenir: 1% (20× value). Both can stack (100×).</p>
+      </div>
+    </div>
+    <details class="panel help-panel">
+      <summary>💡 How it works</summary>
+      <p class="muted">Every knife type can receive every skin. Skins become more valuable in the exact order listed within each rarity, starting with Fire at 1,000 coins. Win coins, collect and sell knives, and save progress to your private cloud account.</p>
+    </details>
+  </section>
+
+  <section class="page" id="inventory">
+    <div class="panel">
+      <div class="card-top"><div><h2>🔪 Your Knife Inventory</h2><p class="muted">Every knife is stored separately, including duplicates and modifiers.</p></div><div class="inventory-total"><span class="muted small">TOTAL INVENTORY VALUE</span><div class="value" id="inventoryValue">0 coins</div></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="subtle" id="sellAllBtn">Sell all for Coins (confirm)</button><button class="primary" id="sellAllDiamondsBtn">💎 Sell All for Diamonds (confirm)</button></div>
+      <div class="inventory-controls"><label for="inventorySearch">🔍 Search knives or skins <input id="inventorySearch" placeholder="Karambit, Doppler, StatTrak..." autocomplete="off"></label></div>
+      <details class="panel" id="boosterInventory" style="margin:12px 0"><summary>⚡ Boosters & Free Spins <span id="boosterCount"></span></summary><div id="boosterInventoryList"></div></details>
+      <div class="inventory-controls">
+        <label for="inventorySort">Sort inventory by
+          <select id="inventorySort">
+            <option value="newest">Newest collected</option>
+            <option value="rarity">Rarity</option>
+            <option value="upgrade">Best upgraded (RGB → Normal)</option>
+            <option value="knife">Knife type (A–Z)</option>
+            <option value="quality">Wear quality</option>
+            <option value="price">Price</option>
+            <option value="float">Float value</option>
+          </select>
+        </label>
+        <label for="inventoryDirection">Order
+          <select id="inventoryDirection">
+            <option value="desc">High to low</option>
+            <option value="asc">Low to high</option>
+          </select>
+        </label>
+        <button class="subtle" id="flipInventorySort" type="button">⇅ Reverse order</button>
+      </div>
+      <p class="muted small" id="inventorySortHelp">Newest knives first.</p>
+      <div class="grid" id="knifeGrid"></div>
+    </div>
+  </section>
+
+  <section class="page" id="upgrader">
+    <div class="panel">
+      <h2>⚒️ Knife Upgrader</h2>
+      <p class="feature-note">Merge two knives of the same upgrade tier to guarantee the next tier. Choose which knife to keep first: its skin, float, rarity, StatTrak and Souvenir stay unchanged. The second knife is consumed. No random failures.</p>
+      <div class="feature-grid" id="mergeTierGuide"></div>
+      <p class="feature-note">Multipliers are total multipliers, not cumulative. Both knives must have the exact same knife type, skin, and upgrade tier. Wear, float, StatTrak, and Souvenir may differ; the first knife is kept.</p>
+      <label for="upgradeKnifeSelect" class="feature-note">First knife — eligible merges only</label>
+      <select id="upgradeKnifeSelect" class="feature-select"></select>
+      <label for="upgradeSecondSelect" class="feature-note" style="display:block;margin-top:12px">Second knife — consumed in merge</label>
+      <select id="upgradeSecondSelect" class="feature-select"></select>
+      <div id="upgradePreview" class="feature-note" style="margin-top:10px"></div>
+      <button class="gold" id="upgradeBtn" style="margin-top:12px">Merge Knives</button>
+      <button class="green" id="upgradeAllBtn" style="margin-top:12px">⚒️ Upgrade All Eligible Knives</button>
+      <p class="feature-note">Upgrade All merges every matching pair automatically, including newly created pairs. For each pair, the earlier knife in your inventory is kept.</p>
+      <div id="upgraderMessage" role="status">Select two knives with matching type, skin, and tier to merge.</div>
+    </div>
+  </section>
+  <section class="page" id="diamonds">
+    <div class="panel">
+      <h2>💎 Diamonds & Ranks</h2>
+      <p class="feature-note">Sell knives for diamonds directly from their inventory cards, exchange diamonds for coins here, or buy permanent ranks. Diamond sale values use separate upgrade multipliers (Bronze 4× to RGB 200×), with caps by skin rarity: Common 10,000; Uncommon 15,000; Rare 25,000; Epic 40,000; Legendary 100,000; Mythic unlimited.</p>
+      <div class="feature-grid">
+        <div class="feature-box">
+          <strong>🪙 Exchange diamonds for coins</strong>
+          <p class="feature-note">1 diamond = 100 coins</p>
+          <label for="diamondExchangeAmount" class="feature-note">Diamonds to exchange</label>
+          <input id="diamondExchangeAmount" class="feature-select" type="number" min="1" step="1" value="1">
+          <button class="green" id="exchangeDiamondsBtn">Exchange for coins</button>
+        </div>
+      </div>
+      <div class="feature-box" style="margin-top:16px"><strong>🎁 Profile Icon Chest — 50 💎</strong><p class="feature-note">Open to receive one random icon from 10 possible designs. Duplicate icons are allowed. Equip them in your Profile or sell each for 25 diamonds.</p><button class="primary" id="buyIconChest">Open Icon Chest — 50 💎</button><div id="iconChestResult" class="feature-note" role="status"></div></div>
+      <div id="diamondMessage" role="status">Your diamonds and purchased rank save to your online account.</div>
+      <h3 style="margin-top:20px">🏅 Rank Shop</h3>
+      <p class="feature-note">Your starting title is <span class="rank-Beginner"><b>Beginner</b></span>. Buying a rank permanently unlocks it; your highest purchased rank is shown beside your balance. Rank purchases are one-time and cannot be refunded.</p>
+      <div class="feature-grid" id="rankShop"></div>
+    </div>
+  </section>
+  <section class="page" id="collection"><div class="panel"><h2>📚 Knife & Skin Collection Book</h2><p class="muted">Every knife-and-skin combination you have discovered stays recorded, even after selling it.</p><div class="value" id="collectionProgress"></div><p class="muted small">Complete every skin in a rarity for a specific knife to claim a one-time diamond bonus. Common 5 · Uncommon 10 · Rare 20 · Epic 50 · Legendary 250 · Mythic 500.</p><div id="collectionBonuses" class="collection-bonus"></div><div class="collection-controls"><select id="collectionKnifeFilter"><option value="">All knife types</option></select><select id="collectionRarityFilter"><option value="">All rarities</option></select><select id="collectionStatusFilter"><option value="">All discoveries</option><option value="found">Discovered</option><option value="missing">Not discovered</option></select></div><div class="grid" id="collectionGrid"></div></div></section>
+  <section class="page" id="profile"><div class="panel"><h2>👤 My Profile</h2><div id="profileCard" class="profile-card"></div><h3>🎨 My Profile Icons</h3><p class="muted small">Equip any icon you own, or sell extra icons for 25 diamonds. Your starting icon cannot be sold.</p><div id="profileIcons" class="icon-grid"></div></div></section>
+  <section class="page" id="stats">
+    <div class="panel">
+      <h2>📊 Your Statistics</h2>
+      <div class="stat-grid">
+        <div class="stat">Total spins<strong id="statSpins">0</strong></div>
+        <div class="stat">Knives collected<strong id="statKnives">0</strong></div>
+        <div class="stat">Coins earned from rewards<strong id="statEarned">0</strong></div>
+        <div class="stat">Coins earned from selling<strong id="statSold">0</strong></div>
+        <div class="stat">Most valuable knife<strong id="statBest">—</strong></div>
+        <div class="stat">Rarest reward<strong id="statRare">None yet</strong></div>
+      </div>
+      <div class="panel" style="margin-top:18px">
+        <h3>⚒️ Current Knives by Upgrade Tier</h3>
+        <p class="muted small">Live inventory counts, including normal knives. Selling or merging a knife updates these totals.</p>
+        <div class="stat-grid" id="upgradeStats"></div>
+      </div>
+      <div class="panel" style="margin-top:18px">
+        <h3>✨ Special Knives Collected</h3>
+        <p class="muted small">Lifetime pulls, including knives later sold or lost. A knife with both modifiers counts in both totals.</p>
+        <div class="stat-grid"><div class="stat">★ StatTrak knives<strong id="statStatTrak">0</strong></div><div class="stat">✦ Souvenir knives<strong id="statSouvenir">0</strong></div></div>
+      </div>
+      <div class="panel" style="margin-top:18px">
+        <h3>💎 Knives Collected by Rarity</h3>
+        <p class="muted small">Lifetime totals, including knives you have sold.</p>
+        <div class="stat-grid" id="rarityBreakdown"></div>
+      </div>
+      <div class="panel" style="margin-top:18px">
+        <h3>🔪 Knives Collected by Type</h3>
+        <p class="muted small">Lifetime totals, including knives you have sold.</p>
+        <div class="stat-grid" id="knifeTypeBreakdown"></div>
+      </div>
+      <button class="subtle" id="resetBtn" style="margin-top:18px">Reset game progress (confirm)</button>
+      <p class="muted small">Resetting permanently clears this browser's saved game. This requires confirmation.</p>
+    </div>
+  <div class="panel"><h2>📜 Recent Knife Drops</h2><p class="muted small">Your 50 most recent knife drops, including sold knives.</p><div id="recentDrops" class="recent-drops"></div></div>
+  </section>
+  <section class="page" id="leaderboard">
+    <div class="panel">
+      <h2>🏆 Global Player Leaderboard</h2>
+      <p class="muted">Players are sorted by highest unlocked title, then player level. This board shows public game names, not email addresses.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:12px 0">
+        <label>Leaderboard name (2–20 characters)<br><input id="leaderboardName" maxlength="20" placeholder="Choose a public name" style="padding:10px;background:#223249;color:white;border:1px solid #47617e;border-radius:8px"></label>
+        <button class="primary" id="leaderboardSaveName">Save name</button>
+        <button class="subtle" id="leaderboardRefresh">↻ Refresh</button>
+      </div>
+      <p class="muted small" id="leaderboardStatus">Open the leaderboard to load players.</p>
+      <div id="leaderboardRows" style="overflow-x:auto"></div>
+      <div id="publicPlayerPanel" class="panel" style="display:none;margin-top:18px;background:#14263a;border:1px solid #55708c">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><h3 id="publicPlayerTitle">Player profile</h3><button class="subtle" id="closePublicProfile">✕ Close</button></div>
+        <p class="muted small" id="publicPlayerStats"></p>
+        <div class="stat-grid" id="publicProfileTotals" style="margin:12px 0;display:none"></div>
+        <section id="publicFeaturedSection" style="display:none;margin:18px 0 24px"><h3 style="margin:0 0 8px">⭐ Featured Knives</h3><p class="muted small" style="margin:0 0 12px">Knives this player has favorited</p><div id="publicFeaturedGrid" class="knife-grid"></div></section>
+        <h3 style="margin:12px 0">🔪 Full Inventory</h3>
+        <label>Search public inventory <input id="publicInventorySearch" placeholder="Knife, skin, rarity, upgrade, StatTrak…" style="width:100%;max-width:480px;padding:10px;background:#223249;color:white;border:1px solid #47617e;border-radius:8px"></label>
+        <p class="muted small" id="publicInventoryCount"></p>
+        <div id="publicInventoryGrid" class="knife-grid"></div>
+      </div>
+    </div>
+  </section>
+  <p id="saveStatus" class="muted small" style="text-align:center">💾 Auto-save enabled · Update 3.1.17</p>
+  <footer>Knife Spin Simulator · Fan-made simulator · Not affiliated with Counter-Strike 2</footer>
+</main>
+<script>
+"use strict";
+const KNIVES = ["Bayonet","Bowie Knife","Butterfly Knife","Classic Knife","Falchion Knife","Flip Knife","Gut Knife","Huntsman Knife","Karambit","Kukri Knife","M9 Bayonet","Navaja Knife","Nomad Knife","Paracord Knife","Shadow Daggers","Skeleton Knife","Stiletto Knife","Survival Knife","Talon Knife","Ursus Knife"];
+const CASES=[{id:"all",name:"All-Knives Case",cost:200,knife:null},...KNIVES.map((knife,i)=>({id:"knife-"+i,name:knife+" Case",cost:300,knife})),{id:"diamond",name:"Diamond Case",cost:10000,knife:null},{id:"fifty",name:"50/50 Case",cost:10000,knife:null}];
+const DIAMOND_REWARDS=[{label:"5,000 Coins",chance:50,type:"coins",amount:5000},{label:"10,000 Coins",chance:30,type:"coins",amount:10000},{label:"10 Diamonds",chance:10,type:"diamonds",amount:10},{label:"25 Diamonds",chance:5,type:"diamonds",amount:25},{label:"50 Diamonds",chance:3,type:"diamonds",amount:50},{label:"100 Diamonds",chance:1.5,type:"diamonds",amount:100},{label:"200 Diamonds",chance:.5,type:"diamonds",amount:200}];
+const FIFTY_REWARDS=[{label:"Nothing (0 coins)",chance:50,type:"coins",amount:0},{label:"Random Knife",chance:50,type:"knife"}];
+const ICON_POOL=[{id:"pug",emoji:"🐶",name:"Pug"},{id:"crown",emoji:"👑",name:"Crown"},{id:"gem",emoji:"💎",name:"Gem"},{id:"star",emoji:"🌟",name:"Star"},{id:"fire",emoji:"🔥",name:"Fire"},{id:"ghost",emoji:"👻",name:"Ghost"},{id:"robot",emoji:"🤖",name:"Robot"},{id:"rocket",emoji:"🚀",name:"Rocket"},{id:"dragon",emoji:"🐉",name:"Dragon"},{id:"shield",emoji:"🛡️",name:"Shield"}];
+const COLLECTION_BONUSES={Common:5,Uncommon:10,Rare:20,Epic:50,Legendary:250,Mythic:500};
+function awardCollectionBonuses(){const found=new Set(state.collection||[]);const claimed=new Set(state.collectionBonuses||[]);let earned=0,completed=[];for(const knife of KNIVES)for(const group of SKIN_GROUPS){const key=JSON.stringify([knife,group.rarity]);if(claimed.has(key))continue;if(group.skins.every(skin=>found.has(JSON.stringify([knife,skin])))){claimed.add(key);earned+=COLLECTION_BONUSES[group.rarity];completed.push(`${knife} ${group.rarity}`);}}state.collectionBonuses=[...claimed];if(earned)state.diamonds+=earned;return {earned,completed};}
+function levelRequirement(level){return Math.ceil(100*Math.pow(1.2,Math.min(level,80)));}
+function levelThreshold(level){let n=0;for(let i=0;i<level;i++)n+=levelRequirement(i);return n;}
+function scaledCaseCost(c){return Math.ceil(c.cost*(1+0.018*(5*Math.floor((state.level||0)/5)))/10)*10;}
+function applyLevelProgress(){let gained=0;while(state.totalSpins>=levelThreshold((state.level||0)+1)&&gained<100){state.level++;state.diamonds+=10+(state.level%5===0?50:0);gained++;}return gained;}
+function caseRewards(){return currentCase().id==="diamond"?DIAMOND_REWARDS:currentCase().id==="fifty"?FIFTY_REWARDS:REWARDS;}
+function currentCase(){return CASES.find(c=>c.id===state.selectedCase)||CASES[0];}
+function updateCaseUI(){
+ const c=currentCase();
+ document.getElementById("caseHeading").textContent=c.name;
+ document.getElementById("caseDescription").textContent=c.id==="diamond"?`${money(scaledCaseCost(c))} coins per spin · Coin and diamond rewards · No knives`:c.id==="fifty"?`${money(scaledCaseCost(c))} coins per spin · 50% nothing · 50% random knife`:`${money(scaledCaseCost(c))} coins per spin · ${c.knife?"Only "+c.knife:"All 20 knives"} · All skins`;
+ buildOdds();
+ document.getElementById("caseGrid").innerHTML=CASES.map(x=>`<button class="case-choice ${x.id===c.id?"active":""}" data-case="${x.id}" ${busy?"disabled":""}>${x.id==="diamond"?"💎":x.id==="fifty"?"🎲":x.knife?"🔪":"🎲"} ${escapeHtml(x.name)}<small>${money(scaledCaseCost(x))} coins / spin</small></button>`).join("");
+ document.querySelectorAll("[data-case]").forEach(b=>b.addEventListener("click",()=>{if(busy)return;state.selectedCase=b.dataset.case;updateCaseUI();buildReel();save();}));
+ document.querySelectorAll("[data-spins]").forEach(b=>{const n=Number(b.dataset.spins);b.textContent=`SPIN ${n} — ${money(n*scaledCaseCost(c))} 🪙`;});
+}
+const FLOAT_QUALITIES=[
+ {name:"Factory New",min:0,max:.07},
+ {name:"Minimal Wear",min:.07,max:.15},
+ {name:"Field-Tested",min:.15,max:.38},
+ {name:"Well-Worn",min:.38,max:.45},
+ {name:"Battle-Scarred",min:.45,max:1}
+];
+function floatQuality(f){return FLOAT_QUALITIES.find(q=>f<q.max)||FLOAT_QUALITIES[FLOAT_QUALITIES.length-1];}
+const WEAR_MULTIPLIERS={"Factory New":2,"Minimal Wear":1.6,"Field-Tested":1.4,"Well-Worn":1.2,"Battle-Scarred":1};
+function wearMultiplier(f){return WEAR_MULTIPLIERS[floatQuality(f).name]||1;}
+// Hidden, balanced rarity value bonuses. Applied only when calculating sell value.
+const HIDDEN_RARITY_MULTIPLIERS={Common:1,Uncommon:1.25,Rare:1.5,Epic:2,Legendary:3,Mythic:5};
+function knifePrice(k){
+ const special=(k.st?5:1)*(k.sv?20:1);
+ return Math.round(k.baseValue*special*(typeof k.float==="number"?wearMultiplier(k.float):1)*UPGRADE_MULTIPLIERS[k.upgradeTier||0]*(HIDDEN_RARITY_MULTIPLIERS[k.rarity]||1));
+}
+const UPGRADE_MULTIPLIERS=[1,2,5,10,25,50,100];
+const DIAMOND_UPGRADE_MULTIPLIERS=[1,4,10,20,50,100,200];
+const DIAMOND_RARITY_CAPS={Common:10000,Uncommon:15000,Rare:25000,Epic:40000,Legendary:100000,Mythic:Infinity};
+function diamondSaleValue(k){const tier=Math.max(0,Math.min(6,Number(k.upgradeTier)||0));const normalValue=knifePrice(k)/UPGRADE_MULTIPLIERS[tier];const cap=DIAMOND_RARITY_CAPS[k.rarity]??10000;return Math.min(cap,Math.max(0,Math.floor(normalValue*DIAMOND_UPGRADE_MULTIPLIERS[tier]/100)));}
+const UPGRADE_NAMES=["","Bronze","Silver","Gold","Platinum","Diamond","RGB"];
+const UPGRADE_COLORS=["","#d59a62","#c6d2e1","#ffca64","#8ce0ea","#64bfff","#c084fc"];
+document.getElementById("mergeTierGuide").innerHTML=UPGRADE_NAMES.slice(1).map((name,i)=>`<div class="feature-box"><strong style="color:${UPGRADE_COLORS[i+1]}">${name}</strong><div>2 ${UPGRADE_NAMES[i]||'Normal'} → 1 ${name}</div><div class="feature-note">Guaranteed · ${UPGRADE_MULTIPLIERS[i+1]}× value</div></div>`).join("");
+const RANKS=[{name:"Beginner",cost:0},{name:"Intermediate",cost:100},{name:"Advanced",cost:1000},{name:"Master",cost:2000},{name:"Pro",cost:5000},{name:"Elite",cost:10000},{name:"Beginner+",cost:15000},{name:"Intermediate+",cost:22500},{name:"Advanced+",cost:35000},{name:"Master+",cost:50000},{name:"Pro+",cost:75000},{name:"Elite+",cost:100000}];
+const SKIN_GROUPS = [
+ {rarity:"Common",weight:50.5,start:1000,step:50,skins:["Fire","Water","Poison","Shadow","Earth","Electric","Air"]},
+ {rarity:"Uncommon",weight:25,start:1600,step:110,skins:["Lava","Ice","Toxic","Quake","Lightning","Wrath","Cloud"]},
+ {rarity:"Rare",weight:19,start:3000,step:300,skins:["Light","Dark","Holy","Unholy","Laser","Phaser","Astral","Celestial"]},
+ {rarity:"Epic",weight:5,start:7000,step:700,skins:["Global","Lunar","Martian","Saturnian","Solar","Meteoric","Jupiternian","Neptunian","Unranian","Platanian"]},
+ {rarity:"Legendary",weight:1.2,start:17000,step:2000,skins:["Doppler phase 1","Doppler phase 2","Doppler phase 3","Doppler phase 4","Doppler Ruby","Doppler Sapphire","Gamma Doppler phase 1","Gamma Doppler phase 2","Gamma Doppler phase 3","Gamma Doppler phase 4","Gamma Doppler Emerald","Gamma Doppler Jade","Diamond Doppler phase 1","Diamond Doppler phase 2","Diamond Doppler phase 3","Diamond Doppler phase 4","Diamond Doppler blue gem","Diamond Doppler gold gem","Diamond Doppler diamond gem","Black pearl Doppler phase 1","Black pearl Doppler phase 2","Black pearl Doppler phase 3","Black pearl Doppler phase 4","Black pearl Doppler night","Black pearl Doppler midnight"]},
+ {rarity:"Mythic",weight:.3,start:70000,step:10000,skins:["Bronze","Silver","Gold","Vanilla"]}
+];
+// Rarity weights are normalized by their actual total.
+const REWARDS=[{label:"50 Coins",chance:58,type:"coins",amount:50},{label:"150 Coins",chance:25,type:"coins",amount:150},{label:"300 Coins",chance:10,type:"coins",amount:300},{label:"500 Coins",chance:5,type:"coins",amount:500},{label:"Random Knife",chance:2,type:"knife"}];
+// Replace these two placeholders with your Supabase project URL and publishable (anon) key.
+// Never put a Supabase service_role or secret key in browser code.
+const SUPABASE_URL="https://fxcnccvongwaxtiwztij.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_xCl_uxn8XJGKMyqJEnF8kQ_WQPeoh0H";
+const cloudConfigured=SUPABASE_URL.startsWith("https://") && !SUPABASE_ANON_KEY.startsWith("PASTE_");
+let supabaseClient=null,activeUser=null,sessionGeneration=0,saveQueue=Promise.resolve(),saveTimer=null,loadingCloud=true;
+function cloudMessage(message){document.getElementById("cloudStatus").textContent=message;}
+function authMessage(message){document.getElementById("authMessage").textContent=message;}
+function normalizeState(saved){
+ const data=saved && typeof saved==="object" && Array.isArray(saved.inventory)?saved:freshState();
+ for(const [key,value] of Object.entries(freshState()))if(data[key]===undefined)data[key]=value;
+ if(!data.rarityCounts || typeof data.rarityCounts!=="object"){
+  data.rarityCounts=Object.fromEntries(SKIN_GROUPS.map(g=>[g.rarity,0]));
+  for(const k of data.inventory)if(k.rarity in data.rarityCounts)data.rarityCounts[k.rarity]++;
+ }
+ if(!data.knifeTypeCounts || typeof data.knifeTypeCounts!=="object"){
+  data.knifeTypeCounts=Object.fromEntries(KNIVES.map(k=>[k,0]));
+  for(const k of data.inventory)if(k.name in data.knifeTypeCounts)data.knifeTypeCounts[k.name]++;
+ }
+ // Upgrade old cloud saves exactly once, preserving existing knife ownership and modifiers.
+ if(!data.basePricesDoubled227){
+  for(const k of data.inventory){
+   if(k.skin && typeof k.baseValue==="number")k.baseValue*=2;
+  }
+  data.bestKnife=(Number(data.bestKnife)||0)*2;
+  data.basePricesDoubled227=true;
+ }
+ for(const k of data.inventory){
+  if(k.skin && typeof k.baseValue==="number"){
+   k.quality=typeof k.float==="number"?floatQuality(k.float).name:k.quality;
+   k.multiplier=(k.st?5:1)*(k.sv?20:1);
+   k.wearMultiplier=typeof k.float==="number"?wearMultiplier(k.float):1;
+   k.upgradeTier=Math.max(0,Math.min(6,Math.floor(Number(k.upgradeTier)||0)));
+   k.value=knifePrice(k);
+  }
+ }
+ data.diamonds=Math.max(0,Math.floor(Number(data.diamonds)||0));
+ data.freeSpins=Math.max(0,Math.floor(Number(data.freeSpins)||0));
+ if(!data.caseFreeSpins||typeof data.caseFreeSpins!=="object"||Array.isArray(data.caseFreeSpins))data.caseFreeSpins={};
+ for(const key of Object.keys(data.caseFreeSpins)){
+  if(!CASES.some(c=>c.id===key&&c.knife)||!Number.isFinite(Number(data.caseFreeSpins[key]))||Number(data.caseFreeSpins[key])<=0)delete data.caseFreeSpins[key];
+  else data.caseFreeSpins[key]=Math.floor(Number(data.caseFreeSpins[key]));
+ }
+ if(!data.boosters||typeof data.boosters!=="object")data.boosters={};
+ if(!data.activeBoosters||typeof data.activeBoosters!=="object")data.activeBoosters={};
+ if(!Array.isArray(data.recentDrops))data.recentDrops=[];
+ data.recentDrops=data.recentDrops.slice(0,50);
+ data.level=Math.max(0,Math.floor(Number(data.level)||0));
+ data.collection=Array.isArray(data.collection)?data.collection:[];
+ data.collectionBonuses=Array.isArray(data.collectionBonuses)?data.collectionBonuses:[];
+ data.profileIcons=Array.isArray(data.profileIcons)?data.profileIcons.filter(x=>ICON_POOL.some(i=>i.id===x)):[];
+ data.profileIcon=ICON_POOL.some(i=>i.id===data.profileIcon)&&data.profileIcons.includes(data.profileIcon)?data.profileIcon:"default";
+ for(const k of data.inventory)if(k.name&&k.skin){const key=JSON.stringify([k.name,k.skin]);if(!data.collection.includes(key))data.collection.push(key);}
+ // Retroactively award completed collection sets once, including on older saves.
+ {const found=new Set(data.collection),claimed=new Set(data.collectionBonuses);for(const knife of KNIVES)for(const group of SKIN_GROUPS){const key=JSON.stringify([knife,group.rarity]);if(!claimed.has(key)&&group.skins.every(skin=>found.has(JSON.stringify([knife,skin])))){claimed.add(key);data.diamonds+=COLLECTION_BONUSES[group.rarity];}}data.collectionBonuses=[...claimed];}
+ // Existing players receive their earned level rewards once when migrating.
+ applyLevelProgressForState(data);
+ data.rankLevel=Math.max(0,Math.min(RANKS.length-1,Math.floor(Number(data.rankLevel)||0)));
+ // One-time migration: preserve the actual purchased + title after reordering.
+ if(!data.rankOrder312Migrated){if(data.rankLevel===9)data.rankLevel=10;else if(data.rankLevel===10)data.rankLevel=9;data.rankOrder312Migrated=true;}
+ data.bestKnife=Math.max(Number(data.bestKnife)||0,...data.inventory.map(k=>Number(k.value)||0));
+ return data;
+}
+function applyLevelProgressForState(data){while(data.totalSpins>=levelThreshold(data.level+1)&&data.level<150){data.level++;data.diamonds+=10+(data.level%5===0?50:0);}}
+const freshState=()=>({selectedCase:"all",coins:500,inventory:[],totalSpins:0,totalKnives:0,coinsEarned:0,coinsSold:0,rarestReward:"None yet",bestKnife:0,basePricesDoubled227:true,diamonds:0,rankLevel:0,upgradeStats:{bronze:{success:0,failed:0},silver:{success:0,failed:0},gold:{success:0,failed:0}},statTrakCollected:0,souvenirCollected:0,level:0,collection:[],collectionBonuses:[],profileIcons:[],profileIcon:"default",freeSpins:0,caseFreeSpins:{},boosters:{},activeBoosters:{},recentDrops:[],daily:null});
+let state=freshState();
+let busy=false;
+let inventorySort="newest",inventoryDirection="desc";
+const RARITY_RANK={Common:0,Uncommon:1,Rare:2,Epic:3,Legendary:4,Mythic:5};
+function sortedInventory(){
+ const indexed=state.inventory.map((knife,index)=>({knife,index}));
+ const dir=inventoryDirection==="asc"?1:-1;
+ indexed.sort((a,b)=>{
+   const x=a.knife,y=b.knife;
+   let cmp=0;
+   if(inventorySort==="rarity")cmp=(RARITY_RANK[x.rarity]??-1)-(RARITY_RANK[y.rarity]??-1);
+   else if(inventorySort==="upgrade")cmp=(Number(x.upgradeTier)||0)-(Number(y.upgradeTier)||0);
+   else if(inventorySort==="knife")cmp=String(x.name||"").localeCompare(String(y.name||""),undefined,{sensitivity:"base"});
+   else if(inventorySort==="quality")cmp=(typeof x.float==="number"?FLOAT_QUALITIES.findIndex(q=>q.name===floatQuality(x.float).name):-1)-(typeof y.float==="number"?FLOAT_QUALITIES.findIndex(q=>q.name===floatQuality(y.float).name):-1);
+   else if(inventorySort==="price")cmp=(Number(x.value)||0)-(Number(y.value)||0);
+   else if(inventorySort==="float")cmp=(typeof x.float==="number"?x.float:-1)-(typeof y.float==="number"?y.float:-1);
+   else cmp=a.index-b.index;
+   return cmp*dir || b.index-a.index;
+ });
+ return indexed.map(entry=>entry.knife);
+}
+function updateSortHelp(){
+ const labels={newest:"collection order",rarity:"rarity (Common → Mythic)",upgrade:"upgrade tier (Normal → RGB)",knife:"knife name (A → Z)",quality:"wear quality (Factory New → Battle-Scarred)",price:"sell value",float:"numeric float (0.0000 → 1.0000)"};
+ document.getElementById("inventorySortHelp").textContent=`Sorting by ${labels[inventorySort]}; ${inventoryDirection==="asc"?"low to high / A to Z":"high to low / Z to A"}. Sorting does not change your saved knives.`;
+}
+document.getElementById("inventorySort").addEventListener("change",e=>{inventorySort=e.target.value;updateSortHelp();render();});
+document.getElementById("inventoryDirection").addEventListener("change",e=>{inventoryDirection=e.target.value;updateSortHelp();render();});
+document.getElementById("flipInventorySort").addEventListener("click",()=>{inventoryDirection=inventoryDirection==="asc"?"desc":"asc";document.getElementById("inventoryDirection").value=inventoryDirection;updateSortHelp();render();});
+updateSortHelp();
+document.getElementById("inventorySearch").addEventListener("input",render);
+function save(){
+ if(!activeUser || loadingCloud || !supabaseClient)return;
+ clearTimeout(saveTimer);
+ const userId=activeUser.id,generation=sessionGeneration;
+ const snapshot=JSON.parse(JSON.stringify(state));
+ cloudMessage("Saving…");
+ saveTimer=setTimeout(()=>{
+  saveQueue=saveQueue.catch(()=>{}).then(async()=>{
+   if(!activeUser || activeUser.id!==userId || generation!==sessionGeneration)return;
+   const {error}=await supabaseClient.from("game_saves").upsert({user_id:userId,game_state:snapshot,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+   if(generation!==sessionGeneration)return;
+   if(error){cloudMessage("⚠ Save failed — retry by making a change");console.error("Cloud save:",error.message);}
+   else {cloudMessage("✓ Saved to cloud");await publishLeaderboard();await publishPublicInventory();}
+  });
+ },400);
+}
+async function flushSave(){
+ if(!activeUser || loadingCloud || !supabaseClient)return;
+ clearTimeout(saveTimer);
+ const id=activeUser.id,generation=sessionGeneration,snapshot=JSON.parse(JSON.stringify(state));
+ saveQueue=saveQueue.catch(()=>{}).then(async()=>{
+  if(!activeUser || activeUser.id!==id || generation!==sessionGeneration)return;
+  const {error}=await supabaseClient.from("game_saves").upsert({user_id:id,game_state:snapshot,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+  if(error)throw error;
+  await publishLeaderboard();await publishPublicInventory();
+ });
+ await saveQueue;
+}
+async function openAccount(user){
+ if(!user)return;
+ const generation=++sessionGeneration;
+ activeUser=user;loadingCloud=true;clearTimeout(saveTimer);
+ document.getElementById("gameMain").style.display="none";
+ document.getElementById("accountBar").style.display="none";
+ authMessage("Loading your cloud save…");
+ const {data,error}=await supabaseClient.from("game_saves").select("game_state").eq("user_id",user.id).maybeSingle();
+ if(generation!==sessionGeneration)return;
+ if(error){authMessage("Unable to load your save: "+error.message+". Please try logging in again.");return;}
+ state=normalizeState(data?.game_state);
+ loadingCloud=false;
+ document.getElementById("accountName").textContent=user.email||"Player";
+ document.getElementById("authScreen").style.display="none";
+ document.getElementById("accountBar").style.display="flex";
+ document.getElementById("gameMain").style.display="block";
+ cloudMessage(data?"✓ Cloud save loaded":"New account — ready to play");
+ buildOdds();updateCaseUI();buildReel();render();save();publishLeaderboard();
+}
+async function initAccounts(){
+ if(!cloudConfigured){authMessage("⚙️ Setup needed: add your Supabase URL and publishable key to the HTML file. See SETUP.txt.");return;}
+ try{
+  if(!window.supabase?.createClient)throw new Error("Supabase library could not load. Check your internet connection.");
+  supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  const {data,error}=await supabaseClient.auth.getUser();
+  if(error)throw error;
+  if(data.user)await openAccount(data.user);
+  else authMessage("Log in or create your free account.");
+ }catch(error){authMessage("Account connection error: "+error.message);}
+}
+async function accountAction(mode){
+ if(!supabaseClient){authMessage("Account system is not configured yet.");return;}
+ const email=document.getElementById("accountEmail").value.trim();
+ const password=document.getElementById("accountPassword").value;
+ if(!email || password.length<6){authMessage("Enter a valid email and password of at least 6 characters.");return;}
+ document.getElementById("loginButton").disabled=true;
+ document.getElementById("signupButton").disabled=true;
+ authMessage(mode==="signup"?"Creating account…":"Logging in…");
+ try{
+  const {data,error}=mode==="signup"?await supabaseClient.auth.signUp({email,password}):await supabaseClient.auth.signInWithPassword({email,password});
+  if(error)throw error;
+  if(data.session?.user)await openAccount(data.session.user);
+  else authMessage("Check your email for a confirmation link, then log in.");
+ }catch(error){authMessage(error.message);}
+ finally{document.getElementById("loginButton").disabled=false;document.getElementById("signupButton").disabled=false;}
+}
+document.getElementById("authForm").addEventListener("submit",event=>{event.preventDefault();accountAction("login");});
+document.getElementById("signupButton").addEventListener("click",()=>accountAction("signup"));
+document.getElementById("logoutButton").addEventListener("click",async()=>{
+ if(busy){cloudMessage("Wait until your spin finishes before logging out.");return;}
+ document.getElementById("logoutButton").disabled=true;
+ try{
+  await flushSave();
+  const {error}=await supabaseClient.auth.signOut();if(error)throw error;
+  ++sessionGeneration;activeUser=null;loadingCloud=true;state=freshState();
+  document.getElementById("gameMain").style.display="none";
+  document.getElementById("accountBar").style.display="none";
+  document.getElementById("authScreen").style.display="block";
+  document.getElementById("accountPassword").value="";
+  authMessage("Logged out. Log in to continue.");
+ }catch(error){cloudMessage("⚠ Could not log out safely: "+error.message);}
+ finally{document.getElementById("logoutButton").disabled=false;}
+});
+function money(n){return Math.floor(Number(n)||0).toLocaleString("en-US");}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function pickWeighted(items,key){const total=items.reduce((s,x)=>s+x[key],0);let r=Math.random()*total;for(const item of items){r-=item[key];if(r<0)return item;}return items[items.length-1];}
+function newKnife(name){
+ const group=pickWeighted(boostActive("luck")?SKIN_GROUPS.map((g,i)=>({...g,weight:g.weight*(1+i*.4)})):SKIN_GROUPS,"weight");
+ const index=Math.floor(Math.random()*group.skins.length);
+ const baseValue=group.start+index*group.step;
+ const float=Math.random();const quality=floatQuality(float).name;
+ const st=Math.random()<.10,sv=Math.random()<.01;
+ const multiplier=(st?5:1)*(sv?20:1);
+ return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,10),name,skin:group.skins[index],rarity:group.rarity,float,quality,baseValue,st,sv,multiplier,wearMultiplier:wearMultiplier(float),value:Math.round(baseValue*multiplier*wearMultiplier(float)*(HIDDEN_RARITY_MULTIPLIERS[group.rarity]||1))};
+}
+// Missions reset on the UTC calendar day. Mission targets are frozen at the level when generated.
+const BOOSTERS={coins:{name:'2× Coins',desc:'Case coin rewards and coin sales'},diamonds:{name:'2× Diamonds',desc:'Diamond case drops and mission diamonds only'},xp:{name:'2× XP',desc:'Double spin experience'},luck:{name:'2× Luck',desc:'Double knife chance and higher rarity weighting'},clicks:{name:'2× Clicks',desc:'Double Add Coins clicks'}};
+function dayKey(){return new Date().toISOString().slice(0,10);}
+function missionScale(level){return Math.min(3,Math.pow(1.1,Math.floor(level/5)));}
+function rewardScale(level,type){return Math.min(type==='coins'?20:type==='diamonds'?10:5,Math.pow(1.2,Math.floor(level/5)));}
+function randomBetween(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+function randomRegularCaseId(){return "knife-"+Math.floor(Math.random()*KNIVES.length);}
+function createDaily(){
+ const lvl=state.level||0,scale=missionScale(lvl);
+ const specs=[
+  ['cases',1000,1],['knives',10,1],['clicks',100,1],
+  ['cases',2500,2],['knives',40,2],['merges',5,2],
+  ['cases',5000,3],['knives',125,3],['merges',15,3]
+ ];
+ const rewardRanges={1:{coins:[1000,10000],diamonds:[1,10],spins:[10,100]},2:{coins:[10000,50000],diamonds:[10,100],spins:[100,200]},3:{coins:[50000,100000],diamonds:[200,500],spins:[200,500]}};
+ return {date:dayKey(),level:lvl,missions:specs.map(([kind,base,tier],i)=>{
+   const options=tier===1?['coins','diamonds','spins']:tier===2?['coins','diamonds','spins','booster']:['coins','diamonds','spins','booster'];
+   // Each tier has a mix of reward types; boosters are occasional.
+   let type=options[i%3];if(tier>1&&Math.random()<(tier===2?.20:.35))type='booster';
+   const booster=type==='booster'?(tier===2?['coins','diamonds']:['xp','luck','clicks'])[randomBetween(0,tier===2?1:2)]:null;
+   const range=type==='booster'?null:rewardRanges[tier][type];
+   return {kind,tier,target:Math.ceil(base*scale),progress:0,claimed:false,reward:{type,amount:range?randomBetween(...range):1,booster,caseId:type==='spins'?randomRegularCaseId():null}};
+ })};
+}
+function ensureDaily(){if(!state.daily||state.daily.date!==dayKey()||!Array.isArray(state.daily.missions)||state.daily.missions.length!==9){state.daily=createDaily();}
+ // Migrate today's missions from older versions without changing their progress or claims.
+ for(const m of state.daily.missions)if(m.reward?.type==='spins'&&!CASES.some(c=>c.id===m.reward.caseId&&c.knife))m.reward.caseId=randomRegularCaseId();}
+function tierUnlocked(tier){if(tier===1)return true;return state.daily.missions.filter(m=>m.tier===tier-1).every(m=>m.claimed);}
+function trackMission(kind,amount){ensureDaily();for(const m of state.daily.missions){if(m.kind===kind&&!m.claimed&&tierUnlocked(m.tier))m.progress=Math.min(m.target,m.progress+amount);}}
+function boostActive(type){return (Number(state.activeBoosters?.[type])||0)>Date.now();}
+function activateAllBoosters(type){if(!BOOSTERS[type]||busy)return;const n=Math.max(0,Math.floor(Number(state.boosters[type])||0));if(!n)return;state.boosters[type]=0;state.activeBoosters[type]=Math.max(Date.now(),Number(state.activeBoosters[type])||0)+n*300000;render();}
+function activateBooster(type){if(!BOOSTERS[type]||busy)return;const n=Number(state.boosters[type])||0;if(n<1)return;state.boosters[type]=n-1;state.activeBoosters[type]=Math.max(Date.now(),Number(state.activeBoosters[type])||0)+300000;render();}
+function claimMission(i){if(busy)return;ensureDaily();const m=state.daily.missions[i];if(!m||m.claimed||m.progress<m.target||!tierUnlocked(m.tier))return;
+ m.claimed=true;const r=m.reward;
+ if(r.type==='booster'){state.boosters[r.booster]=(state.boosters[r.booster]||0)+1;}
+ else{const amount=Math.floor(r.amount*rewardScale(state.daily.level,r.type));if(r.type==='coins'){state.coins+=amount;state.coinsEarned+=amount;}else if(r.type==='diamonds'){state.diamonds+=amount*(boostActive('diamonds')?2:1);}else if(r.type==='spins'){const id=CASES.some(c=>c.id===r.caseId&&c.knife)?r.caseId:randomRegularCaseId();state.caseFreeSpins[id]=(state.caseFreeSpins[id]||0)+amount;}}
+ render();}
+function renderDaily(){ensureDaily();document.getElementById('dailySummary').textContent=state.daily.missions.filter(m=>m.claimed).length+'/9 claimed · Expand/collapse';
+ const names={cases:'Open cases',knives:'Collect knives',clicks:'Add Coins clicks',merges:'Merge knife pairs'};
+ document.getElementById('dailyMissionList').innerHTML=state.daily.missions.map((m,i)=>{const unlocked=tierUnlocked(m.tier),ready=unlocked&&m.progress>=m.target&&!m.claimed,r=m.reward;
+ const reward=r.type==='booster'?'⚡ '+BOOSTERS[r.booster].name+' (5 min)':money(Math.floor(r.amount*rewardScale(state.daily.level,r.type)))+' '+({coins:'🪙',diamonds:'💎',spins:'🎟️ free spins'}[r.type])+(r.type==='spins'?' · '+escapeHtml(CASES.find(c=>c.id===r.caseId)?.name||'Knife Case'):'');
+ return `<div class="daily-card ${unlocked?'':'locked'}"><strong>${unlocked?'':'🔒 '}T${m.tier} · ${names[m.kind]}</strong><div class="muted">${money(m.progress)} / ${money(m.target)}</div><progress value="${m.progress}" max="${m.target}"></progress><div>🎁 ${reward}</div>${m.claimed?'<span style="color:#7de3ac">✓ Claimed</span>':`<button class="${ready?'green':'subtle'}" data-claim="${i}" ${ready?'':'disabled'}>${ready?'Claim':'Not ready'}</button>`}</div>`;
+ }).join('');document.querySelectorAll('[data-claim]').forEach(b=>b.addEventListener('click',()=>claimMission(Number(b.dataset.claim))));}
+function renderBoosters(){
+ const caseEntries=CASES.filter(c=>c.knife&&Number(state.caseFreeSpins[c.id])>0);
+ const total=state.freeSpins+caseEntries.reduce((n,c)=>n+state.caseFreeSpins[c.id],0);
+ document.getElementById('boosterCount').textContent='· '+money(total)+' free spins';
+ const entries=Object.entries(BOOSTERS).map(([id,b])=>{const n=Number(state.boosters[id])||0;const left=Math.max(0,Math.ceil(((state.activeBoosters[id]||0)-Date.now())/1000));return `<div class="booster-entry"><strong>⚡ ${b.name}</strong><div class="muted small">Owned: ${money(n)} · 5 min each</div><div class="muted small">${b.desc}</div>${left?`<div>Active: ${Math.ceil(left/60)} min left</div>`:''}<button class="subtle" data-activate="${id}" ${n<1?'disabled':''}>Activate</button><button class="primary" data-activate-all="${id}" ${n<1?'disabled':''}>Use All (${money(n)})</button></div>`;});
+ const legacy=state.freeSpins>0?`<div class="booster-entry"><strong>🎟️ Legacy All-Knives Spins</strong><div>${money(state.freeSpins)} available (preserved from previous versions)</div><button class="green" data-free-case="all" data-free-count="1">Use 1</button> <button class="primary" data-free-case="all" data-free-count="all">Use All (${money(state.freeSpins)})</button></div>`:'';
+ const spinEntries=caseEntries.map(c=>`<div class="booster-entry"><strong>🎟️ ${escapeHtml(c.name)}</strong><div>${money(state.caseFreeSpins[c.id])} free spins available</div><button class="green" data-free-case="${c.id}" data-free-count="1">Use 1</button> <button class="primary" data-free-case="${c.id}" data-free-count="all">Use All (${money(state.caseFreeSpins[c.id])})</button></div>`).join('');
+ document.getElementById('boosterInventoryList').innerHTML=(legacy+spinEntries||'<div class="booster-entry muted">No free spins yet. Complete daily missions to earn case-specific free spins.</div>')+entries.join('');
+ document.querySelectorAll('[data-activate]').forEach(b=>b.addEventListener('click',()=>activateBooster(b.dataset.activate)));
+ document.querySelectorAll('[data-activate-all]').forEach(b=>b.addEventListener('click',()=>activateAllBoosters(b.dataset.activateAll)));
+ document.querySelectorAll('[data-free-case]').forEach(b=>b.addEventListener('click',()=>{if(busy)return;const id=b.dataset.freeCase;const available=id==='all'?state.freeSpins:(state.caseFreeSpins[id]||0);if(available<1)return;state.selectedCase=id;doSpin(b.dataset.freeCount==='all'?available:1,true);updateCaseUI();}));
+}
+function renderRecentDrops(){document.getElementById('recentDrops').innerHTML=state.recentDrops.length?state.recentDrops.map(k=>`<div>🔪 ${escapeHtml(k.name)} · <span class="rarity-${escapeHtml(k.rarity)}">${escapeHtml(k.skin)} (${escapeHtml(k.rarity)})</span> · ${escapeHtml(k.quality)} · ${money(k.value)} 🪙</div>`).join(''):'<div class="muted">No knife drops recorded yet.</div>';}
+function render(){
+ ensureDaily();renderDaily();renderBoosters();renderRecentDrops();
+ document.getElementById("coins").textContent=money(state.coins);
+ const level=state.level||0,base=levelThreshold(level),next=levelRequirement(level);
+ document.getElementById("levelTitle").textContent=`⭐ Level ${level}`;
+ document.getElementById("levelSpins").textContent=`${money(state.totalSpins-base)} / ${money(next)} spins to Level ${level+1}`;
+ document.getElementById("levelFill").style.width=`${Math.min(100,100*(state.totalSpins-base)/next)}%`;
+ document.getElementById("freeCoins").textContent=`＋ Add ${money(clickCoins())} Coins`;
+ document.getElementById("diamondsBalance").textContent=money(state.diamonds||0);
+ document.getElementById("topRank").innerHTML=`<strong class="rank-${RANKS[state.rankLevel||0].name}">${RANKS[state.rankLevel||0].name}</strong>`;
+ document.getElementById("inventoryCount").textContent=state.inventory.length;
+ document.getElementById("statSpins").textContent=money(state.totalSpins);
+ document.getElementById("statKnives").textContent=money(state.totalKnives);
+ document.getElementById("statEarned").textContent=money(state.coinsEarned);
+ document.getElementById("statSold").textContent=money(state.coinsSold);
+ document.getElementById("statBest").textContent=state.bestKnife?money(state.bestKnife)+" coins":"—";
+ document.getElementById("statRare").textContent=state.rarestReward;
+ document.getElementById("statStatTrak").textContent=money(state.statTrakCollected||0);
+ document.getElementById("statSouvenir").textContent=money(state.souvenirCollected||0);
+ document.getElementById("upgradeStats").innerHTML=UPGRADE_NAMES.map((name,tier)=>`<div class="stat"><span style="color:${UPGRADE_COLORS[tier]||'#edf3fb'}">${name||'Normal'}</span><strong>${money(state.inventory.filter(k=>(k.upgradeTier||0)===tier).length)}</strong></div>`).join("");
+ document.getElementById("rarityBreakdown").innerHTML=SKIN_GROUPS.map(g=>`<div class="stat"><span class="rarity-${g.rarity}">${g.rarity}</span><strong>${money(state.rarityCounts[g.rarity]||0)}</strong></div>`).join("");
+ document.getElementById("knifeTypeBreakdown").innerHTML=KNIVES.map(k=>`<div class="stat">${escapeHtml(k)}<strong>${money(state.knifeTypeCounts[k]||0)}</strong></div>`).join("");
+ document.getElementById("inventoryValue").textContent=money(state.inventory.reduce((sum,k)=>sum+(Number(k.value)||0),0))+" coins";
+ const grid=document.getElementById("knifeGrid");
+ if(!state.inventory.length)grid.innerHTML='<div class="empty" style="grid-column:1/-1">No knives yet. Try spinning!</div>';
+ else grid.innerHTML=sortedInventory().filter(k=>{const q=document.getElementById("inventorySearch").value.trim().toLowerCase();return !q||[k.name,k.skin,k.rarity,k.quality,k.st?"stattrak":"",k.sv?"souvenir":"",UPGRADE_NAMES[k.upgradeTier||0]].join(" ").toLowerCase().includes(q);}).map(k=>{
+  const tier=k.upgradeTier||0;
+  const tierColor=UPGRADE_COLORS[tier]||"#a4b1c1";
+  const titleStyle=tier&&tier!==6?`style="color:${tierColor}"`:"";
+  const titleClass=tier===6?"rgb-title":"";
+  const upgradeTag=tier?`<span class="knife-upgrade-tag ${tier===6?"rgb-title":""}" style="${tier===6?"":`color:${tierColor};border-color:${tierColor}66`}">${UPGRADE_NAMES[tier].toUpperCase()} UPGRADE</span>`:"";
+  return `<article class="card rarity-card-${escapeHtml(k.rarity||"Common")}">
+   <div class="knife-card-art"><button class="favorite-toggle ${k.favorite?"on":""}" data-favorite="${escapeHtml(k.id)}" title="${k.favorite?"Remove favorite":"Protect this knife"}" aria-label="Toggle favorite">${k.favorite?"★":"☆"}</button><span class="knife-icon">🔪</span>${upgradeTag}</div>
+   <div class="knife-card-body">
+    <h3 class="${titleClass}" ${titleStyle}>${escapeHtml(k.name)}</h3>
+    ${k.skin?`<div class="knife-skin-line rarity-${escapeHtml(k.rarity)}"><strong>${escapeHtml(k.skin)}</strong> · ${escapeHtml(k.rarity)}</div>`:'<div class="knife-skin-line muted">Legacy knife</div>'}
+    
+    <div class="knife-tags">${k.st?'<span class="pill st">★ STATTRAK</span>':""}${k.sv?'<span class="pill sv">✦ SOUVENIR</span>':""}</div>
+    ${k.skin?`<details class="knife-details"><summary>Extra info</summary><div class="knife-details-content">${typeof k.float==="number"?`${escapeHtml(k.quality||floatQuality(k.float).name)} · Float ${k.float.toFixed(4)}<br>`:""}Base: ${money(k.baseValue)} coins<br>Wear: ${k.wearMultiplier||1}×<br>Special: ${k.multiplier||1}×<br>Upgrade: ${UPGRADE_MULTIPLIERS[tier]}×</div></details>`:""}
+   </div>
+   <div class="knife-card-footer"><div class="knife-price-label">KNIFE VALUE</div><div class="value">${money(k.value)} coins</div><div class="card-action-row"><button class="gold" data-sell="${escapeHtml(k.id)}" ${k.favorite?"disabled":""}>SELL 🪙</button><button class="primary" data-sell-diamonds="${escapeHtml(k.id)}" ${k.favorite||diamondSaleValue(k)<1?"disabled":""}>SELL 💎 ${money(diamondSaleValue(k))}</button></div></div>
+  </article>`;
+ }).join("");
+ document.querySelectorAll("[data-sell]").forEach(b=>b.addEventListener("click",()=>sellKnife(b.dataset.sell)));
+ document.querySelectorAll("[data-sell-diamonds]").forEach(b=>b.addEventListener("click",()=>sellKnifeForDiamonds(b.dataset.sellDiamonds)));
+ document.querySelectorAll("[data-favorite]").forEach(b=>b.addEventListener("click",()=>{if(busy)return;const k=state.inventory.find(k=>k.id===b.dataset.favorite);if(k){k.favorite=!k.favorite;render();}}));
+ if(document.getElementById("collection").classList.contains("active"))renderCollection();
+ if(document.getElementById("profile").classList.contains("active"))renderProfile();
+ save();
+ renderUpgradeAndDiamonds();
+ save();
+}
+function renderCollection(){
+ const all=KNIVES.flatMap(name=>SKIN_GROUPS.flatMap(group=>group.skins.map(skin=>({name,skin,rarity:group.rarity,key:JSON.stringify([name,skin])}))));
+ const found=new Set(state.collection||[]);
+ document.getElementById("collectionProgress").textContent=`${money(all.filter(x=>found.has(x.key)).length)} / ${money(all.length)} combinations discovered`;
+ const bonusDone=new Set(state.collectionBonuses||[]);
+ document.getElementById("collectionBonuses").innerHTML=`<strong>🏆 Rarity completion bonuses: ${bonusDone.size} / ${KNIVES.length*SKIN_GROUPS.length} claimed</strong><p class="muted small">Rewards are automatically granted when the last missing skin is discovered. Each knife + rarity pays once.</p>`;
+ const knife=document.getElementById("collectionKnifeFilter").value,rarity=document.getElementById("collectionRarityFilter").value,status=document.getElementById("collectionStatusFilter").value;
+ const filtered=all.filter(x=>(!knife||x.name===knife)&&(!rarity||x.rarity===rarity)&&(!status||(status==="found"?found.has(x.key):!found.has(x.key))));
+ document.getElementById("collectionGrid").innerHTML=filtered.map(x=>`<div class="collection-entry ${found.has(x.key)?"discovered":""}"><strong>${found.has(x.key)?"✓":"🔒"} ${escapeHtml(x.name)}</strong><div class="rarity-${x.rarity}">${escapeHtml(x.skin)}</div><div class="muted">${x.rarity} · ${found.has(x.key)?"Discovered":"Not discovered"}</div></div>`).join("")||'<p class="muted">No matching combinations.</p>';
+}
+const collectionKnifeFilter=document.getElementById("collectionKnifeFilter");
+collectionKnifeFilter.innerHTML+=[...KNIVES].map(k=>`<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join("");
+const collectionRarityFilter=document.getElementById("collectionRarityFilter");
+collectionRarityFilter.innerHTML+=SKIN_GROUPS.map(g=>`<option value="${g.rarity}">${g.rarity}</option>`).join("");
+for(const id of ["collectionKnifeFilter","collectionRarityFilter","collectionStatusFilter"])document.getElementById(id).addEventListener("change",renderCollection);
+function renderProfile(){
+ const equipped=ICON_POOL.find(i=>i.id===state.profileIcon);const icon=equipped?equipped.emoji:"👤";
+ const owned=(state.profileIcons||[]);
+ document.getElementById("profileCard").innerHTML=`<div class="profile-avatar">${icon}</div><div><h3>${escapeHtml(activeUser?.email?.split("@")[0]||"Player")}</h3><div class="rank-${RANKS[state.rankLevel||0].name}">${RANKS[state.rankLevel||0].name} · Level ${state.level||0}</div><p class="muted small">🎰 ${money(state.totalSpins)} spins · 🔪 ${money(state.totalKnives)} knives · 📚 ${money((state.collection||[]).length)} discoveries · 💎 ${money(state.diamonds)} diamonds</p></div>`;
+ document.getElementById("profileIcons").innerHTML=`<div class="icon-item"><div class="icon-art">👤</div><strong>Default</strong><button class="subtle" data-equip-icon="default" ${state.profileIcon==="default"?"disabled":""}>${state.profileIcon==="default"?"Equipped":"Equip"}</button></div>`+owned.map((id,index)=>{const i=ICON_POOL.find(x=>x.id===id);if(!i)return "";return `<div class="icon-item"><div class="icon-art">${i.emoji}</div><strong>${i.name}</strong><button class="subtle" data-equip-index="${index}" ${state.profileIcon===id?"disabled":""}>${state.profileIcon===id?"Equipped":"Equip"}</button><button class="gold" data-sell-icon="${index}">Sell · 25 💎</button></div>`;}).join("");
+ document.querySelectorAll("[data-equip-icon]").forEach(b=>b.addEventListener("click",()=>{if(busy)return;state.profileIcon="default";render();}));
+ document.querySelectorAll("[data-equip-index]").forEach(b=>b.addEventListener("click",()=>{if(busy)return;const id=state.profileIcons[Number(b.dataset.equipIndex)];if(id){state.profileIcon=id;render();}}));
+ document.querySelectorAll("[data-sell-icon]").forEach(b=>b.addEventListener("click",()=>{if(busy)return;const idx=Number(b.dataset.sellIcon);const id=state.profileIcons[idx];if(!id||!confirm(`Sell this ${ICON_POOL.find(x=>x.id===id)?.name||"profile"} icon for 25 diamonds?`))return;state.profileIcons.splice(idx,1);if(state.profileIcon===id&&!state.profileIcons.includes(id))state.profileIcon="default";state.diamonds+=25;render();}));
+}
+document.getElementById("buyIconChest").addEventListener("click",()=>{if(busy)return;if(state.diamonds<50){document.getElementById("iconChestResult").textContent="You need 50 diamonds.";return;}state.diamonds-=50;const icon=ICON_POOL[Math.floor(Math.random()*ICON_POOL.length)];state.profileIcons.push(icon.id);document.getElementById("iconChestResult").textContent=`Unlocked ${icon.emoji} ${icon.name}! Equip it in your Profile, or sell it for 25 diamonds.`;render();});
+function buildOdds(){
+ const rewards=caseRewards();
+ const rewardHtml=rewards.map(r=>`<div class="odds-row"><span>${r.type==="knife"?"🔪":r.type==="diamonds"?"💎":"🪙"} ${r.label}</span><strong>${r.chance}%</strong><div class="bar ${r.type==="knife"?"goldbar":""}"><span style="width:${r.chance}%"></span></div></div>`).join("");
+ const skinHtml=currentCase().id==="diamond"?"":'<h3 style="margin-top:12px">Skin rarity odds (on knives)</h3>'+SKIN_GROUPS.map(g=>`<div class="odds-row"><span class="rarity-${g.rarity}">${g.rarity}</span><strong>${(100*g.weight/SKIN_GROUPS.reduce((sum,item)=>sum+item.weight,0)).toFixed(2)}%</strong><div class="bar"><span style="width:${100*g.weight/SKIN_GROUPS.reduce((sum,item)=>sum+item.weight,0)}%"></span></div></div>`).join("");
+ document.getElementById("oddsList").innerHTML=rewardHtml+skinHtml;
+}
+function buildReel(){const selectedKnife=currentCase().knife;const reel=document.getElementById("reel");const samples=[];for(let i=0;i<32;i++){const r=pickWeighted(caseRewards(),"chance");samples.push(r.type==="knife"?(selectedKnife||KNIVES[Math.floor(Math.random()*KNIVES.length)]):"+"+r.amount+(r.type==="diamonds"?" diamonds":" coins"));}reel.innerHTML=samples.map(x=>`<div class="reel-item"><div class="emoji ${x.includes("coins")||x.includes("diamonds")?"":"knife-gold"}">${x.includes("diamonds")?"💎":x.includes("coins")?"🪙":"🔪"}</div><strong>${escapeHtml(x)}</strong></div>`).join("");reel.style.transition="none";reel.style.transform="translateX(0)";}
+function showPage(name){if(name==="leaderboard")loadLeaderboard();if(name==="collection")renderCollection();if(name==="profile")renderProfile();document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===name));document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.page===name));}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>showPage(t.dataset.page)));
+const RANK_CLICK_COINS=[50,100,200,400,800,1500,2000,2500,3000,4000,5000,6000];
+function publicPlayerName(){return String(state.leaderboardName||('Player-'+activeUser.id.slice(0,6))).slice(0,20);}
+async function publishLeaderboard(){
+ if(!activeUser||loadingCloud||!supabaseClient)return;
+ const {error}=await supabaseClient.from('leaderboard_players').upsert({user_id:activeUser.id,display_name:publicPlayerName(),rank_level:state.rankLevel||0,player_level:state.level||0,profile_icon:state.profileIcon||'default',updated_at:new Date().toISOString()},{onConflict:'user_id'});
+ if(error)console.warn('Leaderboard requires the included Supabase SQL setup:',error.message);
+}
+// Public inventory is intentionally separate from private game_saves.
+async function publishPublicInventory(){
+ if(!activeUser||loadingCloud||!supabaseClient)return;
+ const id=activeUser.id;
+ const inventory=state.inventory.map(k=>({name:k.name,skin:k.skin,rarity:k.rarity,upgradeTier:k.upgradeTier||0,st:!!k.st,sv:!!k.sv,float:typeof k.float==='number'?k.float:null,quality:k.quality||'',favorite:!!k.favorite,value:knifePrice(k),diamonds:diamondSaleValue(k)}));
+ const {error}=await supabaseClient.from('public_inventories').upsert({user_id:id,inventory,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+ if(error)console.warn('Public inventory sync needs PUBLIC_INVENTORIES_SETUP.sql:',error.message);
+}
+let viewedPublicInventory=[],publicProfileRequest=0;
+function publicKnifeCard(k){
+ const tier=Math.max(0,Math.min(6,Number(k.upgradeTier)||0));
+ return `<article class="card rarity-card-${escapeHtml(k.rarity||'Common')}"><div class="knife-card-art"><span class="knife-icon">🔪</span>${k.favorite?'★ Favorite':''}</div><div class="knife-card-body"><h3>${escapeHtml(k.name||'Knife')}</h3><div class="knife-skin-line rarity-${escapeHtml(k.rarity||'Common')}">${escapeHtml(k.skin||'Legacy')} · ${escapeHtml(k.rarity||'Common')}</div><div class="knife-tags">${tier?`<span class="pill">${escapeHtml(UPGRADE_NAMES[tier])}</span>`:''}${k.st?'<span class="pill st">★ STATTRAK</span>':''}${k.sv?'<span class="pill sv">✦ SOUVENIR</span>':''}</div><p class="muted small">${escapeHtml(k.quality||'')}${typeof k.float==='number'?' · Float '+Number(k.float).toFixed(4):''}</p></div><div class="knife-card-footer"><div class="value">${money(Number(k.value)||0)} coins</div><div class="muted small">💎 ${money(Number(k.diamonds)||0)} diamonds</div></div></article>`;
+}
+function renderPublicInventory(){
+ const q=document.getElementById('publicInventorySearch').value.trim().toLowerCase();
+ const items=viewedPublicInventory.filter(k=>!q||[k.name,k.skin,k.rarity,k.quality,UPGRADE_NAMES[k.upgradeTier||0],k.st?'stattrak':'',k.sv?'souvenir':''].join(' ').toLowerCase().includes(q));
+ document.getElementById('publicInventoryCount').textContent=`Showing ${money(items.length)} of ${money(viewedPublicInventory.length)} knives · Read-only`;
+ document.getElementById('publicInventoryGrid').innerHTML=items.length?items.map(publicKnifeCard).join(''):'<div class="empty">No matching knives.</div>';
+ const featured=viewedPublicInventory.filter(k=>k.favorite);
+ const section=document.getElementById('publicFeaturedSection');
+ section.style.display=featured.length?'block':'none';
+ document.getElementById('publicFeaturedGrid').innerHTML=featured.map(publicKnifeCard).join('');
+}
+async function openPublicProfile(userId,player){
+ const panel=document.getElementById('publicPlayerPanel'),stats=document.getElementById('publicPlayerStats'),title=document.getElementById('publicPlayerTitle');
+ const request=++publicProfileRequest;panel.style.display='block';title.textContent='👤 '+player.display_name;stats.textContent='Loading public inventory…';document.getElementById('publicProfileTotals').style.display='none';viewedPublicInventory=[];renderPublicInventory();
+ panel.scrollIntoView({behavior:'smooth',block:'start'});
+ const {data,error}=await supabaseClient.from('public_inventories').select('inventory,updated_at').eq('user_id',userId).maybeSingle();
+ if(request!==publicProfileRequest)return;
+ if(error){stats.textContent='Public inventory unavailable. The game owner must run PUBLIC_INVENTORIES_SETUP.sql in Supabase. '+error.message;return;}
+ if(!data){stats.textContent='This player has not published an inventory yet. They need to log in with Update 3.1.17.';return;}
+ viewedPublicInventory=Array.isArray(data.inventory)?data.inventory:[];
+ const rank=RANKS[Math.max(0,Math.min(RANKS.length-1,Number(player.rank_level)||0))].name;
+ stats.textContent=`${rank} · Level ${Number(player.player_level)||0} · Includes favorites and duplicates`;
+ const totalDiamonds=viewedPublicInventory.reduce((sum,k)=>sum+Math.max(0,Number(k.diamonds)||0),0);
+ const rgbCount=viewedPublicInventory.filter(k=>Number(k.upgradeTier)===6).length;
+ const totals=document.getElementById('publicProfileTotals');
+ totals.innerHTML=`<div class="stat"><div class="muted small">🔪 Knives Collected</div><strong>${money(viewedPublicInventory.length)}</strong></div><div class="stat"><div class="muted small">💎 Total Inventory Value</div><strong>${money(totalDiamonds)} diamonds</strong></div><div class="stat"><div class="muted small">🌈 RGB Knives</div><strong>${money(rgbCount)}</strong></div>`;
+ totals.style.display='grid';
+ renderPublicInventory();
+}
+document.getElementById('publicInventorySearch').addEventListener('input',renderPublicInventory);
+document.getElementById('closePublicProfile').addEventListener('click',()=>{++publicProfileRequest;document.getElementById('publicPlayerPanel').style.display='none';});
+async function loadLeaderboard(){
+ const status=document.getElementById('leaderboardStatus'),rows=document.getElementById('leaderboardRows');
+ if(!activeUser||!supabaseClient)return;
+ document.getElementById('leaderboardName').value=state.leaderboardName||'';
+ status.textContent='Loading leaderboard…';
+ await publishLeaderboard();await publishPublicInventory();
+ const {data,error}=await supabaseClient.from('leaderboard_players').select('user_id,display_name,rank_level,player_level,profile_icon').order('rank_level',{ascending:false}).order('player_level',{ascending:false}).limit(500);
+ if(error){status.textContent='Leaderboard unavailable. Run LEADERBOARD_SETUP.sql in your Supabase SQL Editor. '+error.message;rows.innerHTML='';return;}
+ status.textContent=`${data.length} player${data.length===1?'':'s'} shown · Sorted by title, then level · Refresh to update`;
+ rows.innerHTML='<table style="width:100%;border-collapse:collapse"><thead><tr><th>#</th><th>Player</th><th>Title</th><th>Level</th></tr></thead><tbody>'+data.map((x,i)=>{const rank=RANKS[Math.max(0,Math.min(RANKS.length-1,Number(x.rank_level)||0))].name;const icon=ICON_POOL.find(p=>p.id===x.profile_icon)?.emoji||'👤';return `<tr style="border-top:1px solid #41546c"><td style="padding:10px">${i+1}</td><td style="padding:10px"><span style="font-size:1.5rem;vertical-align:middle;margin-right:9px">${icon}</span><button class="subtle" data-public-profile="${i}" style="color:#d6eaff;text-decoration:underline">${escapeHtml(x.display_name)}${x.user_id===activeUser.id?' (You)':''}</button></td><td style="padding:10px"><strong class="rank-${rank}">${escapeHtml(rank)}</strong></td><td style="padding:10px">${Math.max(0,Number(x.player_level)||0)}</td></tr>`;}).join('')+'</tbody></table>';
+ rows.querySelectorAll('[data-public-profile]').forEach(b=>b.addEventListener('click',()=>{const p=data[Number(b.dataset.publicProfile)];if(p)openPublicProfile(p.user_id,p);}));
+}
+document.getElementById('leaderboardRefresh').addEventListener('click',loadLeaderboard);
+document.getElementById('leaderboardSaveName').addEventListener('click',async()=>{
+ if(!activeUser)return;
+ const name=document.getElementById('leaderboardName').value.trim();
+ if(!/^[a-zA-Z0-9 _-]{2,20}$/.test(name)){document.getElementById('leaderboardStatus').textContent='Use 2–20 letters, numbers, spaces, underscores or hyphens.';return;}
+ state.leaderboardName=name;save();await publishLeaderboard();await loadLeaderboard();
+});
+function clickCoins(){return RANK_CLICK_COINS[Math.max(0,Math.min(RANK_CLICK_COINS.length-1,state.rankLevel||0))]*(boostActive("clicks")?2:1);}
+document.getElementById("freeCoins").addEventListener("click",()=>{if(busy)return;const amount=clickCoins();state.coins+=amount;state.coinsEarned+=amount;trackMission("clicks",1);document.getElementById("result").textContent=`Added ${money(amount)} coins!`;render();});
+const spinButtons=[...document.querySelectorAll("[data-spins]")];
+function doSpin(count,free=false){
+ if(busy)return;
+ const chosenCase=currentCase();const cost=free?0:count*scaledCaseCost(chosenCase);
+ if(free){
+  if(!Number.isSafeInteger(count)||count<1)return;
+  if(chosenCase.id==='all'){if(state.freeSpins<count)return;state.freeSpins-=count;}
+  else{if(!chosenCase.knife||(state.caseFreeSpins[chosenCase.id]||0)<count)return;state.caseFreeSpins[chosenCase.id]-=count;}
+ }
+ if(state.coins<cost){document.getElementById("result").textContent=`You need ${money(cost)} coins for ${count} spins. Use +50 Coins!`;return;}
+ busy=true;spinButtons.forEach(b=>b.disabled=true);document.querySelectorAll("[data-case]").forEach(b=>b.disabled=true);
+ state.coins-=cost;state.totalSpins+=count*(boostActive("xp")?2:1);trackMission("cases",count);const levelUps=applyLevelProgress();save();render();updateCaseUI();
+ const rewards=Array.from({length:count},()=>{const r=pickWeighted(boostActive("luck")?caseRewards().map(x=>({...x,chance:x.type==="knife"?x.chance*2:x.chance})):caseRewards(),"chance");return r.type==="knife"?{type:"knife",knife:newKnife(chosenCase.knife||KNIVES[Math.floor(Math.random()*KNIVES.length)])}:r;});
+ const reel=document.getElementById("reel");buildReel();
+ // Show the FIRST spin on the reel, while granting ALL rewards after the animation.
+ const selected=rewards[0];const label=selected.type==="knife"?selected.knife.name:"+"+selected.amount+(selected.type==="diamonds"?" diamonds":" coins");
+ const targetIndex=29;
+ reel.children[targetIndex].innerHTML=`<div class="emoji ${selected.type==="knife"?"knife-gold":""}">${selected.type==="knife"?"🔪":selected.type==="diamonds"?"💎":"🪙"}</div><strong>${escapeHtml(label)}</strong>`;
+ // Align the exact center of the first reward icon to the gold pointer.
+ // Use measured item coordinates so the animation stays accurate at any screen size.
+ const winningItem=reel.children[targetIndex];
+ const offset=winningItem.offsetLeft+winningItem.offsetWidth/2-reel.parentElement.clientWidth/2;
+ document.getElementById("result").textContent=`Spinning ${count} time${count===1?"":"s"}... The reel shows the first result.`;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{reel.style.transition="transform 3.5s cubic-bezier(.08,.72,.12,1)";reel.style.transform=`translateX(-${offset}px)`;}));
+ setTimeout(()=>{
+  const lines=[];
+  // Display the most valuable rewards first; the reel still shows the original first spin.
+  const sortedRewards=[...rewards].sort((a,b)=>(b.type==="knife"?b.knife.value:b.type==="diamonds"?b.amount*100:b.amount)-(a.type==="knife"?a.knife.value:a.type==="diamonds"?a.amount*100:a.amount));
+  for(const r of sortedRewards){
+   if(r.type==="diamonds"){state.diamonds+=r.amount*(boostActive("diamonds")?2:1);lines.push(`<div class="result-line">💎 +${money(r.amount*(boostActive("diamonds")?2:1))} diamonds</div>`);}
+   else if(r.type==="coins"){state.coins+=r.amount*(boostActive("coins")?2:1);state.coinsEarned+=r.amount*(boostActive("coins")?2:1);lines.push(`<div class="result-line">🪙 +${money(r.amount*(boostActive("coins")?2:1))} coins</div>`);}
+   else{const k=r.knife;state.inventory.push(k);state.totalKnives++;trackMission("knives",1);state.recentDrops.unshift({name:k.name,skin:k.skin,rarity:k.rarity,quality:k.quality,value:k.value});state.recentDrops.length=Math.min(50,state.recentDrops.length);if(k.st)state.statTrakCollected++;if(k.sv)state.souvenirCollected++;state.rarityCounts[k.rarity]=(state.rarityCounts[k.rarity]||0)+1;state.knifeTypeCounts[k.name]=(state.knifeTypeCounts[k.name]||0)+1;const discovery=JSON.stringify([k.name,k.skin]);if(!state.collection.includes(discovery))state.collection.push(discovery);state.bestKnife=Math.max(state.bestKnife,k.value);state.rarestReward=k.rarity+" · "+k.skin;lines.push(`<div class="result-line">🔪 <strong>${escapeHtml(k.name)}</strong> · <span class="rarity-${k.rarity}">${escapeHtml(k.skin)} (${k.rarity})</span>${k.st?' <span class="pill st">ST</span>':''}${k.sv?' <span class="pill sv">SV</span>':''} · ${escapeHtml(k.quality)} (${k.float.toFixed(4)}) — <span class="value">${money(k.value)} coins</span></div>`);}
+  }
+  const collectionRewards=awardCollectionBonuses();
+  if(collectionRewards.earned)lines.unshift(`<div class="result-line">🏆 Completed ${collectionRewards.completed.map(escapeHtml).join(", ")} collections! +${money(collectionRewards.earned)} diamonds!</div>`);
+  if(levelUps)lines.unshift(`<div class="result-line">⭐ Gained ${levelUps} level${levelUps===1?"":"s"}! Level ${state.level} · Diamond rewards added!</div>`);
+  const visibleLines=lines.length>150?[...lines.slice(0,150),`<div class="result-line muted">…and ${money(lines.length-150)} more results. All rewards were granted.</div>`]:lines;
+  document.getElementById("result").innerHTML=`<strong style="color:var(--green)">Finished ${count} spin${count===1?"":"s"}!</strong> <span class="muted small">The reel shows spin #1; rewards below are sorted highest value first.</span><div class="result-scroll">${visibleLines.join("")}</div>`;
+  busy=false;spinButtons.forEach(b=>b.disabled=false);render();updateCaseUI();
+ },3650);
+}
+spinButtons.forEach(b=>b.addEventListener("click",()=>doSpin(Number(b.dataset.spins))));
+function sellKnife(id){if(busy)return;const index=state.inventory.findIndex(k=>k.id===id);if(index<0)return;const knife=state.inventory[index];if(knife.favorite)return;state.coins+=knife.value*(boostActive("coins")?2:1);state.coinsSold+=knife.value*(boostActive("coins")?2:1);state.inventory.splice(index,1);document.getElementById("result").textContent=`Sold ${knife.name}${knife.skin?" | "+knife.skin:""} for ${money(knife.value)} coins!`;render();}
+function knifeDisplay(k){return `${k.name}${k.upgradeTier?" ("+UPGRADE_NAMES[k.upgradeTier]+" upgrade)":""} · ${k.skin||"Legacy"} · ${money(k.value)} coins`;}
+function mergeKey(k){return JSON.stringify([k.name,k.skin||null,Number(k.upgradeTier)||0]);}
+function canMerge(first,second){return Boolean(first&&second&&first.id!==second.id&&!first.favorite&&!second.favorite&&(Number(first.upgradeTier)||0)<6&&mergeKey(first)===mergeKey(second));}
+function eligibleFirstKnives(){
+ const counts=new Map();
+ for(const k of state.inventory){if(k.favorite)continue;const key=mergeKey(k);counts.set(key,(counts.get(key)||0)+1);}
+ return state.inventory.filter(k=>!k.favorite&&(Number(k.upgradeTier)||0)<6&&(counts.get(mergeKey(k))||0)>=2);
+}
+function renderUpgradeAndDiamonds(){
+ document.getElementById("upgradeAllBtn").disabled=busy||eligibleFirstKnives().length===0;
+ const upgradeSelect=document.getElementById("upgradeKnifeSelect");
+
+ const previousUpgrade=upgradeSelect.value,previousSecond=document.getElementById("upgradeSecondSelect").value;
+ 
+ const mergeOptions=eligibleFirstKnives().map(k=>`<option value="${escapeHtml(k.id)}">${escapeHtml(knifeDisplay(k))}</option>`).join("");
+ upgradeSelect.innerHTML='<option value="">Choose an eligible knife…</option>'+mergeOptions;
+
+ if(eligibleFirstKnives().some(k=>k.id===previousUpgrade))upgradeSelect.value=previousUpgrade;
+ const secondSelect=document.getElementById("upgradeSecondSelect");
+ const first=state.inventory.find(k=>k.id===upgradeSelect.value);
+ const eligible=first?state.inventory.filter(k=>canMerge(first,k)):[];
+ secondSelect.innerHTML='<option value="">Choose second knife…</option>'+eligible.map(k=>`<option value="${escapeHtml(k.id)}">${escapeHtml(knifeDisplay(k))}</option>`).join("");
+ if(eligible.some(k=>k.id===previousSecond))secondSelect.value=previousSecond;
+
+ updateUpgradePreview();
+ document.getElementById("rankShop").innerHTML=RANKS.map((r,i)=>`<div class="feature-box"><strong class="rank-${r.name}">${r.name}</strong><div>${i===0?"Starting title":money(r.cost)+" 💎"}<div class="feature-note">+${money(RANK_CLICK_COINS[i])} coins per Add Coins click</div></div><button class="${i<=(state.rankLevel||0)?"subtle":"primary"}" data-rank="${i}" ${i!==(state.rankLevel||0)+1?"disabled":""}>${i<=(state.rankLevel||0)?"Unlocked":i===(state.rankLevel||0)+1?`Buy for ${money(r.cost)} 💎`:"🔒 Locked"}</button></div>`).join("");
+ document.querySelectorAll("[data-rank]").forEach(b=>b.addEventListener("click",()=>buyRank(Number(b.dataset.rank))));
+}
+function updateUpgradePreview(){
+ const firstSelect=document.getElementById("upgradeKnifeSelect"),secondSelect=document.getElementById("upgradeSecondSelect");
+ const first=state.inventory.find(k=>k.id===firstSelect.value),previousSecond=secondSelect.value;
+ const eligible=first?state.inventory.filter(k=>canMerge(first,k)):[];
+ secondSelect.innerHTML='<option value="">Choose second knife…</option>'+eligible.map(k=>`<option value="${escapeHtml(k.id)}">${escapeHtml(knifeDisplay(k))}</option>`).join("");
+ if(eligible.some(k=>k.id===previousSecond))secondSelect.value=previousSecond;
+ const second=eligible.find(k=>k.id===secondSelect.value);
+ const el=document.getElementById("upgradePreview"),btn=document.getElementById("upgradeBtn");
+ if(!first){el.textContent=eligibleFirstKnives().length?"Select the knife you want to keep.":"No merges available yet. Collect two knives with the same type, skin, and upgrade tier below RGB.";btn.disabled=true;return;}
+ const tier=first.upgradeTier||0;
+ if(tier>=6){el.textContent="RGB is the maximum upgrade tier.";btn.disabled=true;return;}
+ if(!eligible.length){el.textContent=`You need another matching ${first.name} (${first.skin||"Legacy"}) at ${UPGRADE_NAMES[tier]||'Normal'} tier to merge into ${UPGRADE_NAMES[tier+1]}.`;btn.disabled=true;return;}
+ if(!second){el.textContent=`Choose a second ${UPGRADE_NAMES[tier]||'Normal'} knife. It will be consumed.`;btn.disabled=true;return;}
+ el.textContent=`Guaranteed ${UPGRADE_NAMES[tier+1]} merge: keep ${first.name} (${first.skin||'Legacy'}), consume ${second.name} (${second.skin||'Legacy'}). New value: ${money(Math.round(first.value*UPGRADE_MULTIPLIERS[tier+1]/UPGRADE_MULTIPLIERS[tier]))} coins (${UPGRADE_MULTIPLIERS[tier+1]}×).`;
+ btn.disabled=busy;
+}
+function attemptUpgrade(){
+ if(busy)return;
+ const first=state.inventory.find(k=>k.id===document.getElementById("upgradeKnifeSelect").value);
+ const second=state.inventory.find(k=>k.id===document.getElementById("upgradeSecondSelect").value);
+ if(!canMerge(first,second))return;
+ const next=(first.upgradeTier||0)+1;
+ if(!confirm(`Merge ${knifeDisplay(first)} with ${knifeDisplay(second)}? The second knife will be consumed. You will receive one ${UPGRADE_NAMES[next]} knife. This is guaranteed.`))return;
+ state.inventory=state.inventory.filter(k=>k.id!==second.id);
+ first.upgradeTier=next;first.value=knifePrice(first);
+ state.bestKnife=Math.max(state.bestKnife,first.value);trackMission("merges",1);
+ document.getElementById("upgraderMessage").textContent=`MERGE COMPLETE! Your ${first.name} is now ${UPGRADE_NAMES[next]} and worth ${money(first.value)} coins!`;
+ render();
+}
+function upgradeAll(){
+ if(busy)return;
+ const groups=new Map();
+ for(const k of state.inventory){if(k.favorite||(Number(k.upgradeTier)||0)>=6)continue;const key=mergeKey(k);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(k);}
+ let possible=0;for(const group of groups.values())possible+=Math.floor(group.length/2);
+ if(!possible){document.getElementById("upgraderMessage").textContent="No eligible merges. You need two knives with matching type, skin, and tier.";return;}
+ if(!confirm(`Upgrade All will automatically merge every eligible pair and continue through higher tiers. The second knife in each pair is consumed. Proceed?`))return;
+ const counts=Array(7).fill(0);let total=0;
+ for(let tier=0;tier<6;tier++){
+  const tierGroups=new Map();
+  for(const k of state.inventory){if(k.favorite||(Number(k.upgradeTier)||0)!==tier)continue;const key=mergeKey(k);if(!tierGroups.has(key))tierGroups.set(key,[]);tierGroups.get(key).push(k);}
+  const consumed=new Set();
+  for(const group of tierGroups.values())for(let i=0;i+1<group.length;i+=2){
+   const first=group[i],second=group[i+1];consumed.add(second.id);
+   first.upgradeTier=tier+1;first.value=knifePrice(first);
+   state.bestKnife=Math.max(state.bestKnife,first.value);counts[tier+1]++;total++;
+  }
+  if(consumed.size)state.inventory=state.inventory.filter(k=>!consumed.has(k.id));
+ }
+ trackMission("merges",total);
+ document.getElementById("upgraderMessage").textContent=`Upgrade All complete! ${total} merges: `+counts.map((n,i)=>n?`${n} ${UPGRADE_NAMES[i]}`:null).filter(Boolean).join(", ")+".";
+ render();
+}
+document.getElementById("upgradeAllBtn").addEventListener("click",upgradeAll);
+function sellKnifeForDiamonds(id){
+ if(busy)return;
+ const index=state.inventory.findIndex(k=>k.id===id);
+ if(index<0)return;
+ const k=state.inventory[index];if(k.favorite)return;
+ const amount=diamondSaleValue(k);if(amount<1)return;
+ // Individual knife sales are immediate; bulk sales still require confirmation.
+ state.inventory.splice(index,1);state.diamonds+=amount;
+ document.getElementById("result").textContent=`Sold ${k.name} for ${money(amount)} diamonds.`;
+ render();
+}
+function exchangeDiamonds(){
+ if(busy)return;
+ const amount=Number(document.getElementById("diamondExchangeAmount").value);
+ if(!Number.isSafeInteger(amount)||amount<1){document.getElementById("diamondMessage").textContent="Enter a positive whole number of diamonds.";return;}
+ if(amount>state.diamonds){document.getElementById("diamondMessage").textContent="You don't have enough diamonds.";return;}
+ state.diamonds-=amount;state.coins+=amount*100;
+ document.getElementById("diamondMessage").textContent=`Exchanged ${money(amount)} diamonds for ${money(amount*100)} coins.`;
+ render();
+}
+function buyRank(index){
+ if(busy||index!==(state.rankLevel||0)+1||index>=RANKS.length)return;
+ const rank=RANKS[index];
+ if(state.diamonds<rank.cost){document.getElementById("diamondMessage").textContent=`You need ${money(rank.cost)} diamonds for ${rank.name}.`;return;}
+ if(!confirm(`Purchase permanent ${rank.name} rank for ${money(rank.cost)} diamonds?`))return;
+ state.diamonds-=rank.cost;state.rankLevel=index;
+ document.getElementById("diamondMessage").textContent=`Rank unlocked: ${rank.name}!`;
+ render();
+}
+document.getElementById("upgradeKnifeSelect").addEventListener("change",updateUpgradePreview);
+document.getElementById("upgradeSecondSelect").addEventListener("change",updateUpgradePreview);
+
+document.getElementById("upgradeBtn").addEventListener("click",attemptUpgrade);
+
+document.getElementById("exchangeDiamondsBtn").addEventListener("click",exchangeDiamonds);
+document.getElementById("sellAllBtn").addEventListener("click",()=>{if(busy||!state.inventory.length)return;const sellable=state.inventory.filter(k=>!k.favorite);if(!sellable.length){alert("All knives are favorited and protected.");return;}const total=sellable.reduce((s,k)=>s+k.value,0);if(!confirm(`Sell ${sellable.length} unfavorited knives for ${money(total)} coins? ${state.inventory.length-sellable.length} favorites will be kept.`))return;state.coins+=total*(boostActive("coins")?2:1);state.coinsSold+=total*(boostActive("coins")?2:1);state.inventory=state.inventory.filter(k=>k.favorite);document.getElementById("result").textContent=`Sold all knives for ${money(total)} coins.`;render();});
+document.getElementById("sellAllDiamondsBtn").addEventListener("click",()=>{
+ if(busy||!state.inventory.length)return;
+ const sellable=state.inventory.filter(k=>!k.favorite && diamondSaleValue(k)>=1);
+ if(!sellable.length){alert("No eligible unfavorited knives to sell for diamonds.");return;}
+ const total=sellable.reduce((sum,k)=>sum+diamondSaleValue(k),0);
+ const kept=state.inventory.length-sellable.length;
+ if(!confirm(`Sell ${sellable.length} knives for ${money(total)} diamonds? ${kept} protected or ineligible knives will remain.`))return;
+ const soldIds=new Set(sellable.map(k=>k.id));
+ state.inventory=state.inventory.filter(k=>!soldIds.has(k.id));
+ state.diamonds+=total;
+ document.getElementById("result").textContent=`Sold ${sellable.length} knives for ${money(total)} diamonds.`;
+ render();
+});
+document.getElementById("resetBtn").addEventListener("click",()=>{if(busy)return;if(confirm("Are you sure you want to permanently reset ALL coins, knives, skins, modifiers, and statistics? This cannot be undone.")){state=freshState();state.rarityCounts=Object.fromEntries(SKIN_GROUPS.map(g=>[g.rarity,0]));state.knifeTypeCounts=Object.fromEntries(KNIVES.map(k=>[k,0]));render();updateCaseUI();buildReel();document.getElementById("result").textContent="Your game has been reset.";}});
+// Avoid writing any game data before the signed-in account has been loaded.
+window.addEventListener("pagehide",()=>{if(activeUser&&!loadingCloud)save();});
+initAccounts();
+</script>
+</body>
+</html>
